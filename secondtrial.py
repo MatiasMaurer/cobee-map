@@ -38,6 +38,11 @@ st.markdown("""
     .stApp { background-color: #0f0f0f; }
 
     /* Sidebar */
+    [data-testid="stSidebar"] {
+        background-color: #111111 !important;
+        border-right: 1px solid #1f1f1f !important;
+    }
+    [data-testid="stSidebar"] * { color: #ffffff; }
 
 
     /* Sidebar buttons */
