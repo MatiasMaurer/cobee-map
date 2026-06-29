@@ -477,20 +477,20 @@ elif st.session_state.page == "Map":
                     width: 100%;
                 ">📍 Show my location</button>
                 """, height=50)
-            # Add user location pin if available
-            if user_lat and user_lon:
-                fig.add_scattermap(
-                    lat=[user_lat],
-                    lon=[user_lon],
-                    mode="markers",
-                    marker=dict(size=18, color="#ffffff", symbol="circle"),
-                    name="You are here",
-                    hovertemplate="<b>You are here</b><extra></extra>"
-                )
-                fig.update_layout(map=dict(
-                    center=dict(lat=user_lat, lon=user_lon),
-                    zoom=14
-                ))
+        # Add user location pin if available
+        if user_lat and user_lon:
+            fig.add_scattermap(
+                lat=[user_lat],
+                lon=[user_lon],
+                mode="markers",
+                marker=dict(size=18, color="#ffffff", symbol="circle"),
+                name="You are here",
+                hovertemplate="<b>You are here</b><extra></extra>"
+            )
+            fig.update_layout(map=dict(
+                center=dict(lat=user_lat, lon=user_lon),
+                zoom=14
+            ))
 
             fig.update_traces(marker=dict(size=12, opacity=1), selector=dict(type="scattermap"))
             fig.update_layout(
