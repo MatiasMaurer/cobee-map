@@ -200,8 +200,6 @@ st.markdown("""
 
 # ---------- SIDEBAR ----------
 # ---------- NAVIGATION ----------
-with st.sidebar:
-    st.session_state["sidebar_state"] = "expanded"
 if "page" not in st.session_state:
     st.session_state.page = "📋  Form"
 
@@ -230,21 +228,16 @@ with st.sidebar:
         st.query_params["page"] = "🗺️  Map"
         st.rerun()
 
-# Mobile bottom nav - JavaScript only handles visuals, Python handles logic
+# Mobile bottom nav
 st.markdown(f"""
 <style>
-    /* Hide mobile nav on desktop */
     @media (min-width: 769px) {{
         #mobile-nav {{ display: none !important; }}
     }}
-
-    /* Hide desktop sidebar on mobile */
     @media (max-width: 768px) {{
         [data-testid="stSidebar"] {{ display: none !important; }}
         .block-container {{ padding-bottom: 80px !important; padding-top: 0.5rem !important; }}
     }}
-
-    /* Bottom nav bar */
     #mobile-nav {{
         position: fixed;
         bottom: 0;
@@ -259,7 +252,6 @@ st.markdown(f"""
         padding: 8px 0 20px 0;
         height: 60px;
     }}
-
     #mobile-nav a {{
         display: flex;
         flex-direction: column;
@@ -272,30 +264,19 @@ st.markdown(f"""
         font-weight: 500;
         padding: 4px 24px;
         border-radius: 8px;
-        transition: color 0.15s;
     }}
-
-    #mobile-nav a.active {{
-        color: #7c3aed;
-    }}
-
-    #mobile-nav a span.nav-icon {{
-        font-size: 1.3rem;
-    }}
+    #mobile-nav a.active {{ color: #7c3aed; }}
+    #mobile-nav a span.nav-icon {{ font-size: 1.3rem; }}
 </style>
-
 <div id="mobile-nav">
     <a href="?page=📋  Form" class="{'active' if page == '📋  Form' else ''}">
-        <span class="nav-icon">📋</span>
-        <span>Form</span>
+        <span class="nav-icon">📋</span><span>Form</span>
     </a>
     <a href="?page=📄  List" class="{'active' if page == '📄  List' else ''}">
-        <span class="nav-icon">📄</span>
-        <span>List</span>
+        <span class="nav-icon">📄</span><span>List</span>
     </a>
     <a href="?page=🗺️  Map" class="{'active' if page == '🗺️  Map' else ''}">
-        <span class="nav-icon">🗺️</span>
-        <span>Map</span>
+        <span class="nav-icon">🗺️</span><span>Map</span>
     </a>
 </div>
 """, unsafe_allow_html=True)
