@@ -450,55 +450,33 @@ elif st.session_state.page == "Map":
         user_lon = float(st.query_params.get("ulon", 0)) or None
 
         # JS geolocation button
-        st.markdown("""
-        <button onclick="
-            navigator.geolocation.getCurrentPosition(function(pos) {
-                const lat = pos.coords.latitude;
-                const lon = pos.coords.longitude;
-                const url = new URL(window.location.href);
-                url.searchParams.set('ulat', lat);
-                url.searchParams.set('ulon', lon);
-                url.searchParams.set('page', 'Map');
-                window.location.href = url.toString();
-            }, function(err) {
-                alert('Could not get location: ' + err.message);
-            });
-        " style="
-            background-color: #7c3aed;
-            color: white;
-            border: none;
-            border-radius: 8px;
-            padding: 10px 20px;
-            font-size: 0.9rem;
-            font-weight: 600;
-            cursor: pointer;
-            margin-bottom: 1rem;
-            width: 100%;
-        ">📍 Show my location</button>
-        """, unsafe_allow_html=True)
+        import streamlit.components.v1 as components
 
-        if df is not None:
-            color_map = {
-                "Supermarket": "#10b981",
-                "Restaurant": "#f59e0b",
-                "Transit": "#ef4444",
-                "Coffee Shop": "#3b82f6",
-                "Tabacs": "#a855f7",
-                "Other": "#6b7280"
-            }
-
-            fig = px.scatter_map(
-                df,
-                lat="axisX",
-                lon="axisY",
-                hover_name="Name",
-                hover_data={"Type": True, "Street": True, "Location": True, "axisX": False, "axisY": False, "status": False},
-                color="Type",
-                color_discrete_map=color_map,
-                zoom=12,
-                height=850,
-            )
-
+        components.html("""
+                <button onclick="
+                    navigator.geolocation.getCurrentPosition(function(pos) {
+                        const lat = pos.coords.latitude;
+                        const lon = pos.coords.longitude;
+                        const url = new URL(window.parent.location.href);
+                        url.searchParams.set('ulat', lat);
+                        url.searchParams.set('ulon', lon);
+                        url.searchParams.set('page', encodeURIComponent('🗺️  Map'));
+                        window.parent.location.href = url.toString();
+                    }, function(err) {
+                        alert('Could not get location: ' + err.message);
+                    });
+                " style="
+                    background-color: #7c3aed;
+                    color: white;
+                    border: none;
+                    border-radius: 8px;
+                    padding: 10px 20px;
+                    font-size: 0.9rem;
+                    font-weight: 600;
+                    cursor: pointer;
+                    width: 100%;
+                ">📍 Show my location</button>
+                """, height=50)
             # Add user location pin if available
             if user_lat and user_lon:
                 fig.add_scattermap(
