@@ -7,7 +7,8 @@
         "Location": "Eixample",
         "axisX": 41.39256588196223,
         "axisY": 2.1497583392068513,
-        "status": "confirmed"
+        "status": "confirmed",
+        "reports": 0
     },
     {
         "Name": "Ametller Origen",
@@ -17,7 +18,8 @@
         "Location": "Eixample",
         "axisX": 41.39504567675163,
         "axisY": 2.156763347300649,
-        "status": "confirmed"
+        "status": "confirmed",
+        "reports": 0
     },
     {
         "Name": "Ametller Origen",
@@ -27,7 +29,8 @@
         "Location": "Sarri\u00e0-Sant Gervasi",
         "axisX": 41.397696750705734,
         "axisY": 2.151385568191179,
-        "status": "confirmed"
+        "status": "confirmed",
+        "reports": 0
     },
     {
         "Name": "Ametller Origen",
@@ -37,7 +40,8 @@
         "Location": "Gr\u00e0cia",
         "axisX": 41.39882463317859,
         "axisY": 2.1568989316822194,
-        "status": "confirmed"
+        "status": "confirmed",
+        "reports": 0
     },
     {
         "Name": "Ametller Origen",
@@ -47,7 +51,8 @@
         "Location": "Eixample",
         "axisX": 41.395814594637066,
         "axisY": 2.1657634238995986,
-        "status": "confirmed"
+        "status": "confirmed",
+        "reports": 0
     },
     {
         "Name": "Ametller Origen",
@@ -57,7 +62,8 @@
         "Location": "Sarri\u00e0-Sant Gervasi",
         "axisX": 41.3925457601156,
         "axisY": 2.1420620799207484,
-        "status": "confirmed"
+        "status": "confirmed",
+        "reports": 0
     },
     {
         "Name": "Ametller Origen",
@@ -67,7 +73,8 @@
         "Location": "Sarri\u00e0-Sant Gervasi",
         "axisX": 41.39894419483762,
         "axisY": 2.1423087047447136,
-        "status": "confirmed"
+        "status": "confirmed",
+        "reports": 0
     },
     {
         "Name": "Ametller Origen",
@@ -77,7 +84,8 @@
         "Location": "Les Corts",
         "axisX": 41.390155239869976,
         "axisY": 2.14317783262674,
-        "status": "confirmed"
+        "status": "confirmed",
+        "reports": 0
     },
     {
         "Name": "Ametller Origen",
@@ -87,7 +95,8 @@
         "Location": "Eixample",
         "axisX": 41.38822344219248,
         "axisY": 2.157168234797003,
-        "status": "confirmed"
+        "status": "confirmed",
+        "reports": 0
     },
     {
         "Name": "Ametller Origen",
@@ -97,7 +106,8 @@
         "Location": "Eixample",
         "axisX": 41.38564762262868,
         "axisY": 2.1512888324459722,
-        "status": "confirmed"
+        "status": "confirmed",
+        "reports": 0
     },
     {
         "Name": "Ametller Origen",
@@ -107,7 +117,8 @@
         "Location": "Eixample",
         "axisX": 41.38413428104893,
         "axisY": 2.156653250649468,
-        "status": "confirmed"
+        "status": "confirmed",
+        "reports": 0
     },
     {
         "Name": "Ametller Origen",
@@ -117,7 +128,8 @@
         "Location": "Eixample",
         "axisX": 41.38123629462142,
         "axisY": 2.153520430418626,
-        "status": "confirmed"
+        "status": "confirmed",
+        "reports": 0
     },
     {
         "Name": "Ametller Origen",
@@ -127,7 +139,8 @@
         "Location": "Sarri\u00e0-Sant Gervasi",
         "axisX": 41.39488790175837,
         "axisY": 2.1422847298064736,
-        "status": "confirmed"
+        "status": "confirmed",
+        "reports": 0
     },
     {
         "Name": "Ametller Origen",
@@ -137,7 +150,8 @@
         "Location": "Gr\u00e0cia",
         "axisX": 41.40227133420827,
         "axisY": 2.152626679239434,
-        "status": "confirmed"
+        "status": "confirmed",
+        "reports": 0
     },
     {
         "Name": "Ametller Origen",
@@ -147,7 +161,8 @@
         "Location": "Eixample",
         "axisX": 41.40023478719261,
         "axisY": 2.166836413239659,
-        "status": "confirmed"
+        "status": "confirmed",
+        "reports": 0
     },
     {
         "Name": "Ametller Origen",
@@ -157,7 +172,8 @@
         "Location": "Gr\u00e0cia",
         "axisX": 41.40158386865235,
         "axisY": 2.15805296808103,
-        "status": "confirmed"
+        "status": "confirmed",
+        "reports": 0
     },
     {
         "Name": "Chocolate Ametller",
@@ -167,7 +183,8 @@
         "Location": "Eixample",
         "axisX": 41.39552183003023,
         "axisY": 2.162229805666527,
-        "status": "confirmed"
+        "status": "confirmed",
+        "reports": 0
     },
     {
         "Name": "Estanco Tabacs",
@@ -177,7 +194,8 @@
         "Location": "Gr\u00e0cia",
         "axisX": 41.397463355277814,
         "axisY": 2.160225302498126,
-        "status": "confirmed"
+        "status": "confirmed",
+        "reports": 0
     },
     {
         "Name": "Estanco Tabacs",
@@ -187,7 +205,8 @@
         "Location": "Gr\u00e0cia",
         "axisX": 41.39675268534432,
         "axisY": 2.155191242949004,
-        "status": "confirmed"
+        "status": "confirmed",
+        "reports": 0
     },
     {
         "Name": "Estanco Tabacs",
@@ -197,7 +216,8 @@
         "Location": "Sarri\u00e0-Sant Gervasi",
         "axisX": 41.39527431343411,
         "axisY": 2.1487188431296937,
-        "status": "confirmed"
+        "status": "confirmed",
+        "reports": 0
     },
     {
         "Name": "Estanco Tabacs",
@@ -207,7 +227,8 @@
         "Location": "Gr\u00e0cia",
         "axisX": 41.39638261142662,
         "axisY": 2.1559922811396213,
-        "status": "confirmed"
+        "status": "confirmed",
+        "reports": 0
     },
     {
         "Name": "Estanco Tabacs",
@@ -217,7 +238,8 @@
         "Location": "Eixample",
         "axisX": 41.394592274501676,
         "axisY": 2.1562195761583944,
-        "status": "confirmed"
+        "status": "confirmed",
+        "reports": 0
     },
     {
         "Name": "Estanco Tabacs",
@@ -227,7 +249,8 @@
         "Location": "Eixample",
         "axisX": 41.392546114782746,
         "axisY": 2.151503206198832,
-        "status": "confirmed"
+        "status": "confirmed",
+        "reports": 0
     },
     {
         "Name": "Estanco Tabacs",
@@ -237,7 +260,8 @@
         "Location": "Eixample",
         "axisX": 41.394634902144254,
         "axisY": 2.158492525536497,
-        "status": "confirmed"
+        "status": "confirmed",
+        "reports": 0
     },
     {
         "Name": "Estanc Duaso",
@@ -247,7 +271,8 @@
         "Location": "Eixample",
         "axisX": 41.392801888269894,
         "axisY": 2.158094759395329,
-        "status": "confirmed"
+        "status": "confirmed",
+        "reports": 0
     },
     {
         "Name": "L'Estanc",
@@ -257,7 +282,8 @@
         "Location": "Eixample",
         "axisX": 41.39344131758494,
         "axisY": 2.161276888524672,
-        "status": "confirmed"
+        "status": "confirmed",
+        "reports": 0
     },
     {
         "Name": "Estanco Tabacs",
@@ -267,7 +293,8 @@
         "Location": "Eixample",
         "axisX": 41.39403811260419,
         "axisY": 2.164799960060731,
-        "status": "confirmed"
+        "status": "confirmed",
+        "reports": 0
     },
     {
         "Name": "Estanco Tabacs",
@@ -277,7 +304,8 @@
         "Location": "Eixample",
         "axisX": 41.39207719410917,
         "axisY": 2.1599131188978107,
-        "status": "confirmed"
+        "status": "confirmed",
+        "reports": 0
     },
     {
         "Name": "Estanc Aribau",
@@ -287,7 +315,8 @@
         "Location": "Eixample",
         "axisX": 41.39033902082208,
         "axisY": 2.1570426264737583,
-        "status": "confirmed"
+        "status": "confirmed",
+        "reports": 0
     },
     {
         "Name": "Estanco Tabacs",
@@ -297,7 +326,8 @@
         "Location": "Eixample",
         "axisX": 41.38908035272356,
         "axisY": 2.1515397373356637,
-        "status": "confirmed"
+        "status": "confirmed",
+        "reports": 0
     },
     {
         "Name": "Estanco Tabacs",
@@ -307,7 +337,8 @@
         "Location": "Eixample",
         "axisX": 41.38903000549277,
         "axisY": 2.154828049137696,
-        "status": "confirmed"
+        "status": "confirmed",
+        "reports": 0
     },
     {
         "Name": "Estanco Tabacs",
@@ -317,7 +348,8 @@
         "Location": "Eixample",
         "axisX": 41.387720963806885,
         "axisY": 2.1563044340284043,
-        "status": "confirmed"
+        "status": "confirmed",
+        "reports": 0
     },
     {
         "Name": "Estanco Tabacs",
@@ -327,7 +359,8 @@
         "Location": "Eixample",
         "axisX": 41.386210498341875,
         "axisY": 2.158116360939728,
-        "status": "confirmed"
+        "status": "confirmed",
+        "reports": 0
     },
     {
         "Name": "Estanco Tabacs",
@@ -337,7 +370,8 @@
         "Location": "Eixample",
         "axisX": 41.38710317837575,
         "axisY": 2.162102565565229,
-        "status": "confirmed"
+        "status": "confirmed",
+        "reports": 0
     },
     {
         "Name": "Estanc Casa Fuster",
@@ -347,7 +381,8 @@
         "Location": "Eixample",
         "axisX": 41.38951968760165,
         "axisY": 2.1658136672146986,
-        "status": "confirmed"
+        "status": "confirmed",
+        "reports": 0
     },
     {
         "Name": "Estaci\u00f3 de Fontana",
@@ -357,7 +392,8 @@
         "Location": "Gr\u00e0cia",
         "axisX": 41.40312899380354,
         "axisY": 2.1528402697494067,
-        "status": "confirmed"
+        "status": "confirmed",
+        "reports": 0
     },
     {
         "Name": "Estaci\u00f3 de Verdaguer",
@@ -367,7 +403,8 @@
         "Location": "Eixample",
         "axisX": 41.39952364468229,
         "axisY": 2.167431487262928,
-        "status": "confirmed"
+        "status": "confirmed",
+        "reports": 0
     },
     {
         "Name": "Estaci\u00f3 de Diagonal",
@@ -377,7 +414,8 @@
         "Location": "Eixample",
         "axisX": 41.3960149736722,
         "axisY": 2.1605452533244813,
-        "status": "confirmed"
+        "status": "confirmed",
+        "reports": 0
     },
     {
         "Name": "Estaci\u00f3 de Hospital Cl\u00ednic",
@@ -387,7 +425,8 @@
         "Location": "Eixample",
         "axisX": 41.389206553178596,
         "axisY": 2.151720594575905,
-        "status": "confirmed"
+        "status": "confirmed",
+        "reports": 0
     },
     {
         "Name": "Estaci\u00f3 de Enten\u00e7a",
@@ -397,7 +436,8 @@
         "Location": "Eixample",
         "axisX": 41.38482655856415,
         "axisY": 2.1454594407971843,
-        "status": "confirmed"
+        "status": "confirmed",
+        "reports": 0
     },
     {
         "Name": "Estaci\u00f3 de Urgell",
@@ -407,7 +447,8 @@
         "Location": "Eixample",
         "axisX": 41.38335584194567,
         "axisY": 2.159545373752112,
-        "status": "confirmed"
+        "status": "confirmed",
+        "reports": 0
     },
     {
         "Name": "Estaci\u00f3 de Universitat",
@@ -417,7 +458,8 @@
         "Location": "Ciutat Vella",
         "axisX": 41.385991865883334,
         "axisY": 2.164724047874126,
-        "status": "confirmed"
+        "status": "confirmed",
+        "reports": 0
     },
     {
         "Name": "Estaci\u00f3 de Pla\u00e7a Catalunya",
@@ -427,7 +469,8 @@
         "Location": "Eixample",
         "axisX": 41.38761040147886,
         "axisY": 2.16979333903804,
-        "status": "confirmed"
+        "status": "confirmed",
+        "reports": 0
     },
     {
         "Name": "Estaci\u00f3 de Passeig de Gr\u00e0cia",
@@ -437,7 +480,8 @@
         "Location": "Eixample",
         "axisX": 41.390783045309504,
         "axisY": 2.166879337239433,
-        "status": "confirmed"
+        "status": "confirmed",
+        "reports": 0
     },
     {
         "Name": "Estaci\u00f3 de Girona",
@@ -447,7 +491,8 @@
         "Location": "Eixample",
         "axisX": 41.395132142934386,
         "axisY": 2.1711051353610484,
-        "status": "confirmed"
+        "status": "confirmed",
+        "reports": 0
     },
     {
         "Name": "Estaci\u00f3 de Pla\u00e7a Espanya",
@@ -457,7 +502,8 @@
         "Location": "Sants-Montju\u00efc",
         "axisX": 41.374874535461274,
         "axisY": 2.1484701399803474,
-        "status": "confirmed"
+        "status": "confirmed",
+        "reports": 0
     },
     {
         "Name": "Estaci\u00f3 de Fran\u00e7a",
@@ -467,7 +513,8 @@
         "Location": "Ciutat Vella",
         "axisX": 41.38458187463945,
         "axisY": 2.1867399838118597,
-        "status": "confirmed"
+        "status": "confirmed",
+        "reports": 0
     },
     {
         "Name": "Estaci\u00f3 de Barcelona-Sants",
@@ -477,7 +524,8 @@
         "Location": "Sants-Montju\u00efc",
         "axisX": 41.378968129935465,
         "axisY": 2.1398433055586175,
-        "status": "confirmed"
+        "status": "confirmed",
+        "reports": 0
     },
     {
         "Name": "Estanco Tabacs",
@@ -487,7 +535,8 @@
         "Location": "Sants-Montju\u00efc",
         "axisX": 41.38285435280187,
         "axisY": 2.1382718341489757,
-        "status": "confirmed"
+        "status": "confirmed",
+        "reports": 0
     },
     {
         "Name": "Estanco Tabacs",
@@ -497,7 +546,8 @@
         "Location": "Eixample",
         "axisX": 41.38667454341998,
         "axisY": 2.166154871265549,
-        "status": "confirmed"
+        "status": "confirmed",
+        "reports": 0
     },
     {
         "Name": "Estanco Tabacs",
@@ -507,6 +557,7 @@
         "Location": "Eixample",
         "axisX": 41.389237643099,
         "axisY": 2.149782942938273,
-        "status": "confirmed"
+        "status": "confirmed",
+        "reports": 0
     }
 ]

@@ -320,7 +320,8 @@ if st.session_state.page == "📋  Form":
                     "Location": Location,
                     "axisX": axisX,
                     "axisY": axisY,
-                    "status": "confirmed"
+                    "status": "confirmed",
+                    "reports": 0
                 })
                 save_data(data)
                 st.success(f"✅ {Name} added successfully!")
@@ -376,14 +377,20 @@ elif st.session_state.page == "📄  List":
                 if st.button("✏️", key=f"Edit_{i}", help="Edit"):
                     st.session_state["Editing"] = i
             with col3:
-                if e["status"] == "disputed":
-                    if st.button("⚠️", key=f"Resolve_yes_{i}", help="Confirm card works"):
+                if e["status"] == "rejected" or e["status"] == "disputed":
+                    if st.button("✅", key=f"Resolve_yes_{i}", help="Restore — card works here"):
                         data[i]["status"] = "confirmed"
+                        data[i]["reports"] = 0
                         save_data(data)
                         st.rerun()
-                elif e["status"] == "confirmed":
-                    if st.button("❌", key=f"Resolve_no_{i}", help="Confirm card doesn't work"):
-                        data[i]["status"] = "rejected"
+                if e["status"] == "confirmed" or e["status"] == "disputed":
+                    if st.button("❌", key=f"Resolve_no_{i}", help="Report — card doesn't work here"):
+                        reports = e.get("reports", 0) + 1
+                        data[i]["reports"] = reports
+                        if reports >= 2:
+                            data[i]["status"] = "rejected"
+                        else:
+                            data[i]["status"] = "disputed"
                         save_data(data)
                         st.rerun()
 
