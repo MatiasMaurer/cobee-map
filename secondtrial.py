@@ -41,8 +41,20 @@ st.markdown("""
     [data-testid="stSidebar"] {
         background-color: #111111 !important;
         border-right: 1px solid #1f1f1f !important;
+        min-width: 200px !important;
+        max-width: 200px !important;
+        transform: none !important;
+        visibility: visible !important;
+        margin-left: 0px !important;
+    }
+    [data-testid="stSidebarCollapsedControl"] {
+        display: none !important;
     }
     [data-testid="stSidebar"] * { color: #ffffff; }
+    [data-testid="stSidebar"][aria-expanded="false"] {
+        margin-left: 0px !important;
+        transform: none !important;
+    }
 
 
     /* Sidebar buttons */
