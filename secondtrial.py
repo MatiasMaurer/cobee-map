@@ -399,6 +399,7 @@ elif st.session_state.page == "List":
                     <div style="flex:1">
                         <div class="establishment-name">{e['Name']}</div>
                         <div class="establishment-meta">{e['Street']} · {e['Location']}<br>Last updated: {e.get("last_updated","Never")}</div>
+                        </div>
                     <span class="badge {badge_class}">{e['Type']}</span>
                 </div>
                 """, unsafe_allow_html=True)
