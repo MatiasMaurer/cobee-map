@@ -251,7 +251,6 @@ with st.sidebar:
     with st.sidebar:
         st.markdown("<div style='height:1px'></div>", unsafe_allow_html=True)
         st.markdown("<h1 style='color:#7c3aed; margin-bottom: 0.2rem; font-size: 2rem;'>📍 Cobee</h1>", unsafe_allow_html=True)
-    st.markdown("<h1 style='color:#7c3aed; margin-bottom: 0.2rem; font-size: 2rem;'>📍 Cobee</h1>", unsafe_allow_html=True)
     st.markdown("<p style='color:#7c3aed; font-size:0.8rem; margin-bottom: 1.5rem;'>Establishment map</p>", unsafe_allow_html=True)
     st.markdown("---")
     if st.button("📋  Form", key="sb_form", use_container_width=True):
