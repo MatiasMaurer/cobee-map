@@ -3,8 +3,6 @@ import plotly.express as px
 import pandas as pd
 import json
 import os
-from datetime import datetime
-from streamlit_geolocation import streamlit_geolocation
 
 # ---------- DATA ----------
 DATA_FILE = "establishments.json"
@@ -311,26 +309,12 @@ if st.session_state.page == "Form":
             with col2:
                 Type = st.selectbox("Type", TYPES)
                 Number = st.number_input("Number", min_value=0, step=1)
-                use_current = st.checkbox("📍 Use my current location")
-                if use_current:
-                    location = streamlit_geolocation()
-                    if location and location["latitude"] is not None:
-                        axisX = location["latitude"]
-                        axisY = location["longitude"]
-                        st.success("Current location loaded!")
-                        st.write(f"Latitude: {axisX:.6f}")
-                        st.write(f"Longitude: {axisY:.6f}")
-                    else:
-                        st.info("Waiting for browser location...")
-                        axisX = None
-                        axisY = None
-                else:
-                    axisX = st.number_input("Latitude", format="%.8f")
-                    axisY = st.number_input("Longitude", format="%.8f")
+                axisX = st.number_input("Latitude", format="%.8f")
+                axisY = st.number_input("Longitude", format="%.8f")
             submitted = st.form_submit_button("Add establishment", use_container_width=True)
 
         if submitted:
-            if Name and Street and Location and axisX is not None and axisY is not None:
+            if Name and Street and Location:
                 data = load_data()
                 data.append({
                     "Name": Name,
@@ -341,8 +325,7 @@ if st.session_state.page == "Form":
                     "axisX": axisX,
                     "axisY": axisY,
                     "status": "confirmed",
-                    "reports": 0,
-                    "last_updated": datetime.now().strftime("%d/%m/%Y %H:%M")
+                    "reports": 0
                 })
                 save_data(data)
                 st.success(f"✅ {Name} added successfully!")
@@ -362,7 +345,6 @@ if st.session_state.page == "Form":
                     full_name = f"{e['Name']} — {e['Street']} {e['Number']}, {e['Location']}"
                     if full_name == selected:
                         e["status"] = "disputed"
-                        e["last_updated"] = datetime.now().strftime("%d/%m/%Y %H:%M")
                 save_data(data)
                 st.warning(f"⚠️ {selected} has been reported and marked as disputed.")
         else:
@@ -398,7 +380,8 @@ elif st.session_state.page == "List":
                     <span style="font-size:1.2rem">{icon}</span>
                     <div style="flex:1">
                         <div class="establishment-name">{e['Name']}</div>
-                        <div class="establishment-meta">{e['Street']} · {e['Location']}<br>Last updated: {e.get("last_updated","Never")}</div>
+                        <div class="establishment-meta">{e['Street']} · {e['Location']}</div>
+                    </div>
                     <span class="badge {badge_class}">{e['Type']}</span>
                 </div>
                 """, unsafe_allow_html=True)
@@ -410,7 +393,6 @@ elif st.session_state.page == "List":
                     if st.button("✅", key=f"Resolve_yes_{i}", help="Restore — card works here"):
                         data[i]["status"] = "confirmed"
                         data[i]["reports"] = 0
-                        data[i]["last_updated"] = datetime.now().strftime("%d/%m/%Y %H:%M")
                         save_data(data)
                         st.rerun()
                 if e["status"] in ["confirmed", "disputed"]:
@@ -421,7 +403,6 @@ elif st.session_state.page == "List":
                             data[i]["status"] = "rejected"
                         else:
                             data[i]["status"] = "disputed"
-                            data[i]["last_updated"] = datetime.now().strftime("%d/%m/%Y %H:%M")
                         save_data(data)
                         st.rerun()
             with col4:
@@ -454,7 +435,6 @@ elif st.session_state.page == "List":
                         "axisX": new_ejeX,
                         "axisY": new_ejeY,
                     })
-                    data[i]["last_updated"] = datetime.now().strftime("%d/%m/%Y %H:%M")
                     save_data(data)
                     st.session_state["Editing"] = None
                     st.success("✅ Changes saved!")
