@@ -58,7 +58,6 @@ section[data-testid="stSidebar"][aria-expanded="false"] {
     max-width: 220px !important;
 
 }
-    }
     [data-testid="stSidebar"] * { color: #ffffff; }
 
     /* Sidebar buttons */
