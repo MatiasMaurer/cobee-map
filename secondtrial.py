@@ -7,15 +7,18 @@ import os
 # ---------- DATA ----------
 DATA_FILE = "establishments.json"
 
+
 def load_data():
     if not os.path.exists(DATA_FILE):
         return []
     with open(DATA_FILE, "r") as f:
         return json.load(f)
 
+
 def save_data(data):
     with open(DATA_FILE, "w") as f:
         json.dump(data, f, indent=4)
+
 
 # ---------- CONFIG ----------
 st.set_page_config(page_title="Cobee Map", layout="wide", initial_sidebar_state="expanded")
@@ -257,8 +260,10 @@ page = st.session_state.page
 with st.sidebar:
     with st.sidebar:
         st.markdown("<div style='height:1px'></div>", unsafe_allow_html=True)
-        st.markdown("<h1 style='color:#7c3aed; margin-bottom: 0.2rem; font-size: 2rem;'>Cobee</h1>", unsafe_allow_html=True)
-    st.markdown("<p style='color:#7c3aed; font-size:0.8rem; margin-bottom: 1.5rem;'>Establishment map</p>", unsafe_allow_html=True)
+        st.markdown("<h1 style='color:#7c3aed; margin-bottom: 0.2rem; font-size: 2rem;'>Cobee</h1>",
+                    unsafe_allow_html=True)
+    st.markdown("<p style='color:#7c3aed; font-size:0.8rem; margin-bottom: 1.5rem;'>Establishment map</p>",
+                unsafe_allow_html=True)
     st.markdown("---")
     if st.button("Form", key="sb_form", use_container_width=True):
         st.session_state.page = "Form"
@@ -368,7 +373,7 @@ elif st.session_state.page == "List":
 
             badge_class = BADGE_CLASS.get(e["Type"], "badge-other")
 
-            col1, col2, col3 = st.columns([7, 1, 1])
+            col1, col2, col3, col4 = st.columns([7, 1, 1, 1])
             with col1:
                 st.markdown(f"""
                 <div class="establishment-card">
@@ -400,6 +405,11 @@ elif st.session_state.page == "List":
                             data[i]["status"] = "disputed"
                         save_data(data)
                         st.rerun()
+            with col4:
+                if st.button("🗑️", key=f"Delete_{i}", help="Delete establishment"):
+                    data.pop(i)
+                    save_data(data)
+                    st.rerun()
 
             if st.session_state.get("Editing") == i:
                 with st.form(f"Edit_form_{i}"):
@@ -440,12 +450,12 @@ elif st.session_state.page == "Map":
         with col1:
             type_filter = st.multiselect("Filter by type", TYPES, default=TYPES)
         with col2:
-            status_filter = st.multiselect("Filter by status", ["confirmed", "disputed", "rejected"], default=["confirmed", "disputed", "rejected"])
+            status_filter = st.multiselect("Filter by status", ["confirmed", "disputed", "rejected"],
+                                           default=["confirmed", "disputed", "rejected"])
 
-        data = [e for e in data if e["Type"] in type_filter and e["status"] in status_filter]
-        df = pd.DataFrame(data) if data else None
+        filtered_data = [e for e in data if e["Type"] in type_filter and e["status"] in status_filter]
+        df = pd.DataFrame(filtered_data) if filtered_data else None
 
-        # Get user location from query params if available
         try:
             user_lat = float(st.query_params["ulat"])
             user_lon = float(st.query_params["ulon"])
@@ -453,48 +463,70 @@ elif st.session_state.page == "Map":
             user_lat = None
             user_lon = None
 
-        # JS geolocation button
         import streamlit.components.v1 as components
 
         components.html("""
-                <button onclick="
-                    navigator.geolocation.getCurrentPosition(function(pos) {
-                        const lat = pos.coords.latitude;
-                        const lon = pos.coords.longitude;
-                        const url = new URL(window.parent.location.href);
-                        url.searchParams.set('ulat', lat);
-                        url.searchParams.set('ulon', lon);
-                        url.searchParams.set('page', '%F0%9F%97%BA%EF%B8%8F++Map');
-                        window.parent.location.href = url.toString();
-                    }, function(err) {
-                        alert('Could not get location: ' + err.message);
-                    });
-                " style="
-                    background-color: #7c3aed;
-                    color: white;
-                    border: none;
-                    border-radius: 8px;
-                    padding: 10px 20px;
-                    font-size: 0.9rem;
-                    font-weight: 600;
-                    cursor: pointer;
-                    width: 100%;
-                ">📍 Show my location</button>
-                """, height=50)
-        # Add user location pin if available
-        if user_lat and user_lon:
-            fig.add_scattermap(
-                lat=[user_lat],
-                lon=[user_lon],
-                mode="markers",
-                marker=dict(size=18, color="#ffffff", symbol="circle"),
-                name="You are here",
-                hovertemplate="<b>You are here</b><extra></extra>"
+        <button onclick="
+            navigator.geolocation.getCurrentPosition(function(pos) {
+                const lat = pos.coords.latitude;
+                const lon = pos.coords.longitude;
+                const url = new URL(window.parent.location.href);
+                url.searchParams.set('ulat', lat);
+                url.searchParams.set('ulon', lon);
+                url.searchParams.set('page', 'Map');
+                window.parent.location.href = url.toString();
+            }, function(err) {
+                alert('Could not get location: ' + err.message);
+            });
+        " style="
+            background-color: #7c3aed;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 10px 20px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            width: 100%;
+        ">📍 Show my location</button>
+        """, height=55)
+
+        if df is not None:
+            color_map = {
+                "Supermarket": "#10b981",
+                "Restaurant": "#f59e0b",
+                "Transit": "#ef4444",
+                "Coffee Shop": "#3b82f6",
+                "Tabacs": "#a855f7",
+                "Other": "#6b7280"
+            }
+
+            fig = px.scatter_map(
+                df,
+                lat="axisX",
+                lon="axisY",
+                hover_name="Name",
+                hover_data={"Type": True, "Street": True, "Location": True, "axisX": False, "axisY": False,
+                            "status": False},
+                color="Type",
+                color_discrete_map=color_map,
+                zoom=12,
+                height=780,
             )
-            fig.update_layout(map=dict(
-                center=dict(lat=user_lat, lon=user_lon),
-                zoom=14
-            ))
+
+            if user_lat and user_lon:
+                fig.add_scattermap(
+                    lat=[user_lat],
+                    lon=[user_lon],
+                    mode="markers",
+                    marker=dict(size=18, color="#ffffff"),
+                    name="You are here",
+                    hovertemplate="<b>You are here</b><extra></extra>"
+                )
+                fig.update_layout(map=dict(
+                    center=dict(lat=user_lat, lon=user_lon),
+                    zoom=14
+                ))
 
             fig.update_traces(marker=dict(size=12, opacity=1), selector=dict(type="scattermap"))
             fig.update_layout(
