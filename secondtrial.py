@@ -464,7 +464,7 @@ elif st.session_state.page == "Map":
                         const url = new URL(window.parent.location.href);
                         url.searchParams.set('ulat', lat);
                         url.searchParams.set('ulon', lon);
-                        url.searchParams.set('page', encodeURIComponent('Map'));
+                        url.searchParams.set('page', '%F0%9F%97%BA%EF%B8%8F++Map');
                         window.parent.location.href = url.toString();
                     }, function(err) {
                         alert('Could not get location: ' + err.message);
