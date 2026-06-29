@@ -190,14 +190,62 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # ---------- SIDEBAR ----------
+# ---------- NAVIGATION ----------
+if "page" not in st.session_state:
+    st.session_state.page = "📋  Form"
+
+# Desktop sidebar
 with st.sidebar:
-    st.markdown("<h1 style='color:#ffffff; font-size:2rem; margin-bottom: 0.01rem;'>Cobee</h1>", unsafe_allow_html=True)
-    st.markdown("<p style='color:#ffffff; font-size:2rem; margin-bottom: 1.5rem;'>Establishment map</p>", unsafe_allow_html=True)
+    st.markdown("<h1 style='color:#7c3aed; margin-bottom: 0.2rem; font-size: 2rem;'>📍 Cobee</h1>", unsafe_allow_html=True)
+    st.markdown("<p style='color:#7c3aed; font-size:0.8rem; margin-bottom: 1.5rem;'>Establishment map</p>", unsafe_allow_html=True)
     st.markdown("---")
-    page = st.radio("Navigation", ["📋  Form", "📄  List", "🗺️  Map"], label_visibility="collapsed")
+    if st.button("📋  Form", use_container_width=True, key="sb_form"):
+        st.session_state.page = "📋  Form"
+    if st.button("📄  List", use_container_width=True, key="sb_list"):
+        st.session_state.page = "📄  List"
+    if st.button("🗺️  Map", use_container_width=True, key="sb_map"):
+        st.session_state.page = "🗺️  Map"
+
+# Mobile bottom nav
+st.markdown("""
+<style>
+    .mobile-nav {
+        display: none;
+    }
+    @media (max-width: 768px) {
+        [data-testid="stSidebar"] { display: none !important; }
+        .block-container { padding-bottom: 100px !important; }
+        .mobile-nav {
+            display: flex;
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            z-index: 9999;
+            background-color: #111111;
+            border-top: 1px solid #2a2a2a;
+            justify-content: space-around;
+            padding: 8px 0 24px 0;
+        }
+    }
+</style>
+""", unsafe_allow_html=True)
+
+col1, col2, col3 = st.columns(3)
+with col1:
+    if st.button("📋\nForm", key="mob_form", use_container_width=True):
+        st.session_state.page = "📋  Form"
+with col2:
+    if st.button("📄\nList", key="mob_list", use_container_width=True):
+        st.session_state.page = "📄  List"
+with col3:
+    if st.button("🗺️\nMap", key="mob_map", use_container_width=True):
+        st.session_state.page = "🗺️  Map"
+
+page = st.session_state.page
 
 # ---------- FORM PAGE ----------
-if page == "📋  Form":
+if st.session_state.page == "📋  Form":
     st.subheader("Establishments")
     form_tab1, form_tab2 = st.tabs(["Add establishment", "Report establishment"])
 
@@ -252,7 +300,7 @@ if page == "📋  Form":
             st.info("No confirmed establishments to report yet.")
 
 # ---------- LIST PAGE ----------
-elif page == "📄  List":
+elif st.session_state.page == "📄  List":
     st.subheader("All establishments")
     data = load_data()
 
@@ -315,7 +363,7 @@ elif page == "📄  List":
         st.info("No establishments added yet.")
 
 # ---------- MAP PAGE ----------
-elif page == "🗺️  Map":
+elif st.session_state.page == "🗺️  Map":
     data = load_data()
     if data:
         df = pd.DataFrame(data)
