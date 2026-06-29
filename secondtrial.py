@@ -179,7 +179,7 @@ st.markdown("""
     }
 
     /* Mobile overrides */
-    @media (max-width: 768px) {
+    @media (max-width: 480px) {
         .block-container {
             padding-bottom: 90px !important;
             padding-left: 1rem !important;
