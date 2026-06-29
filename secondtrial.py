@@ -194,55 +194,100 @@ st.markdown("""
 if "page" not in st.session_state:
     st.session_state.page = "📋  Form"
 
+# Handle query params for mobile navigation
+params = st.query_params
+if "page" in params:
+    st.session_state.page = params["page"]
+
+page = st.session_state.page
+
 # Desktop sidebar
 with st.sidebar:
     st.markdown("<h1 style='color:#7c3aed; margin-bottom: 0.2rem; font-size: 2rem;'>📍 Cobee</h1>", unsafe_allow_html=True)
     st.markdown("<p style='color:#7c3aed; font-size:0.8rem; margin-bottom: 1.5rem;'>Establishment map</p>", unsafe_allow_html=True)
     st.markdown("---")
-    if st.button("📋  Form", use_container_width=True, key="sb_form"):
+    if st.button("📋  Form", key="sb_form", use_container_width=True):
         st.session_state.page = "📋  Form"
-    if st.button("📄  List", use_container_width=True, key="sb_list"):
+        st.query_params["page"] = "📋  Form"
+        st.rerun()
+    if st.button("📄  List", key="sb_list", use_container_width=True):
         st.session_state.page = "📄  List"
-    if st.button("🗺️  Map", use_container_width=True, key="sb_map"):
+        st.query_params["page"] = "📄  Form"
+        st.rerun()
+    if st.button("🗺️  Map", key="sb_map", use_container_width=True):
         st.session_state.page = "🗺️  Map"
+        st.query_params["page"] = "🗺️  Map"
+        st.rerun()
 
-# Mobile bottom nav
-st.markdown("""
+# Mobile bottom nav - JavaScript only handles visuals, Python handles logic
+st.markdown(f"""
 <style>
-    .mobile-nav {
-        display: none;
-    }
-    @media (max-width: 768px) {
-        [data-testid="stSidebar"] { display: none !important; }
-        .block-container { padding-bottom: 100px !important; }
-        .mobile-nav {
-            display: flex;
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            z-index: 9999;
-            background-color: #111111;
-            border-top: 1px solid #2a2a2a;
-            justify-content: space-around;
-            padding: 8px 0 24px 0;
-        }
-    }
+    /* Hide mobile nav on desktop */
+    @media (min-width: 769px) {{
+        #mobile-nav {{ display: none !important; }}
+    }}
+
+    /* Hide desktop sidebar on mobile */
+    @media (max-width: 768px) {{
+        [data-testid="stSidebar"] {{ display: none !important; }}
+        .block-container {{ padding-bottom: 80px !important; padding-top: 0.5rem !important; }}
+    }}
+
+    /* Bottom nav bar */
+    #mobile-nav {{
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        z-index: 99999;
+        background-color: #111111;
+        border-top: 1px solid #2a2a2a;
+        display: flex;
+        justify-content: space-around;
+        align-items: center;
+        padding: 8px 0 20px 0;
+        height: 60px;
+    }}
+
+    #mobile-nav a {{
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 2px;
+        text-decoration: none;
+        color: #888888;
+        font-size: 0.65rem;
+        font-weight: 500;
+        padding: 4px 24px;
+        border-radius: 8px;
+        transition: color 0.15s;
+    }}
+
+    #mobile-nav a.active {{
+        color: #7c3aed;
+    }}
+
+    #mobile-nav a span.nav-icon {{
+        font-size: 1.3rem;
+    }}
 </style>
+
+<div id="mobile-nav">
+    <a href="?page=📋  Form" class="{'active' if page == '📋  Form' else ''}">
+        <span class="nav-icon">📋</span>
+        <span>Form</span>
+    </a>
+    <a href="?page=📄  List" class="{'active' if page == '📄  List' else ''}">
+        <span class="nav-icon">📄</span>
+        <span>List</span>
+    </a>
+    <a href="?page=🗺️  Map" class="{'active' if page == '🗺️  Map' else ''}">
+        <span class="nav-icon">🗺️</span>
+        <span>Map</span>
+    </a>
+</div>
 """, unsafe_allow_html=True)
-
-col1, col2, col3 = st.columns(3)
-with col1:
-    if st.button("📋\nForm", key="mob_form", use_container_width=True):
-        st.session_state.page = "📋  Form"
-with col2:
-    if st.button("📄\nList", key="mob_list", use_container_width=True):
-        st.session_state.page = "📄  List"
-with col3:
-    if st.button("🗺️\nMap", key="mob_map", use_container_width=True):
-        st.session_state.page = "🗺️  Map"
-
-page = st.session_state.page
 
 # ---------- FORM PAGE ----------
 if st.session_state.page == "📋  Form":
