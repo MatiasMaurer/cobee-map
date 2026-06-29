@@ -445,6 +445,38 @@ elif st.session_state.page == "Map":
         data = [e for e in data if e["Type"] in type_filter and e["status"] in status_filter]
         df = pd.DataFrame(data) if data else None
 
+        # Get user location from query params if available
+        user_lat = float(st.query_params.get("ulat", 0)) or None
+        user_lon = float(st.query_params.get("ulon", 0)) or None
+
+        # JS geolocation button
+        st.markdown("""
+        <button onclick="
+            navigator.geolocation.getCurrentPosition(function(pos) {
+                const lat = pos.coords.latitude;
+                const lon = pos.coords.longitude;
+                const url = new URL(window.location.href);
+                url.searchParams.set('ulat', lat);
+                url.searchParams.set('ulon', lon);
+                url.searchParams.set('page', 'Map');
+                window.location.href = url.toString();
+            }, function(err) {
+                alert('Could not get location: ' + err.message);
+            });
+        " style="
+            background-color: #7c3aed;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 10px 20px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            margin-bottom: 1rem;
+            width: 100%;
+        ">📍 Show my location</button>
+        """, unsafe_allow_html=True)
+
         if df is not None:
             color_map = {
                 "Supermarket": "#10b981",
@@ -466,7 +498,23 @@ elif st.session_state.page == "Map":
                 zoom=12,
                 height=850,
             )
-            fig.update_traces(marker=dict(size=12, opacity=1))
+
+            # Add user location pin if available
+            if user_lat and user_lon:
+                fig.add_scattermap(
+                    lat=[user_lat],
+                    lon=[user_lon],
+                    mode="markers",
+                    marker=dict(size=18, color="#ffffff", symbol="circle"),
+                    name="You are here",
+                    hovertemplate="<b>You are here</b><extra></extra>"
+                )
+                fig.update_layout(map=dict(
+                    center=dict(lat=user_lat, lon=user_lon),
+                    zoom=14
+                ))
+
+            fig.update_traces(marker=dict(size=12, opacity=1), selector=dict(type="scattermap"))
             fig.update_layout(
                 map_style="carto-darkmatter",
                 margin={"r": 0, "t": 0, "l": 0, "b": 0},
