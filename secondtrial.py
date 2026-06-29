@@ -191,7 +191,14 @@ st.markdown("""
     }
 
     /* Mobile overrides */
-    @media (max-width: 140px) {
+    @media (max-width: 480px) {
+        [data-testid="stSidebar"] {
+            display: none !important;
+            margin-left: -200px !important;
+        }
+        [data-testid="stSidebarCollapsedControl"] {
+            display: none !important;
+        }
         .block-container {
             padding-bottom: 90px !important;
             padding-left: 1rem !important;
