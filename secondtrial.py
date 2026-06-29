@@ -278,15 +278,12 @@ st.markdown(f"""
 <div id="mobile-nav">
     <a href="?page=Form" class="{'active' if page == 'Form' else ''}">
         <span class="nav-icon">Form</span>
-        <span>Form</span>
     </a>
     <a href="?page=List" class="{'active' if page == 'List' else ''}">
         <span class="nav-icon">List</span>
-        <span>List</span>
     </a>
     <a href="?page=Map" class="{'active' if page == 'Map' else ''}">
         <span class="nav-icon">Map</span>
-        <span>Map</span>
     </a>
 </div>
 """, unsafe_allow_html=True)
