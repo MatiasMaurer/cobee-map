@@ -37,14 +37,27 @@ st.markdown("""
     /* Background */
     .stApp { background-color: #0f0f0f; }
 
-    /* Sidebar - desktop always visible */
-    [data-testid="stSidebar"] {
-        background-color: #111111 !important;
-        border-right: 1px solid #1f1f1f !important;
-        display: block !important;
-        visibility: visible !important;
-        min-width: 200px !important;
-        max-width: 200px !important;
+    /* Sidebar */
+
+section[data-testid="stSidebar"] {
+
+    background-color: #111111 !important;
+
+    border-right: 1px solid #1f1f1f !important;
+
+    min-width: 220px !important;
+
+    max-width: 220px !important;
+
+}
+
+section[data-testid="stSidebar"][aria-expanded="false"] {
+
+    min-width: 220px !important;
+
+    max-width: 220px !important;
+
+}
     }
     [data-testid="stSidebar"] * { color: #ffffff; }
 
