@@ -350,6 +350,13 @@ elif st.session_state.page == "📄  List":
     st.subheader("All establishments")
     data = load_data()
 
+    search = st.text_input("🔍 Search", placeholder="Search by name, street or region...")
+    if search:
+        data = [e for e in data if
+                search.lower() in e["Name"].lower() or
+                search.lower() in e["Street"].lower() or
+                search.lower() in e["Location"].lower()]
+
     if data:
         for i, e in enumerate(data):
             if e["status"] == "confirmed":
@@ -429,39 +436,48 @@ elif st.session_state.page == "📄  List":
 elif st.session_state.page == "🗺️  Map":
     data = load_data()
     if data:
-        df = pd.DataFrame(data)
+        col1, col2 = st.columns(2)
+        with col1:
+            type_filter = st.multiselect("Filter by type", TYPES, default=TYPES)
+        with col2:
+            status_filter = st.multiselect("Filter by status", ["confirmed", "disputed", "rejected"], default=["confirmed", "disputed", "rejected"])
 
-        color_map = {
-            "Supermarket": "#10b981",
-            "Restaurant": "#f59e0b",
-            "Transit": "#ef4444",
-            "Coffee Shop": "#3b82f6",
-            "Tabacs": "#a855f7",
-            "Other": "#6b7280"
-        }
+        data = [e for e in data if e["Type"] in type_filter and e["status"] in status_filter]
+        df = pd.DataFrame(data) if data else None
 
-        fig = px.scatter_map(
-            df,
-            lat="axisX",
-            lon="axisY",
-            hover_name="Name",
-            hover_data={"Type": True, "Street": True, "Location": True, "axisX": False, "axisY": False, "status": False},
-            color="Type",
-            color_discrete_map=color_map,
-            zoom=12,
-            height=850,
-        )
-        fig.update_traces(marker=dict(size=12, opacity=1))
-        fig.update_layout(
-            map_style="carto-darkmatter",
-            margin={"r": 0, "t": 0, "l": 0, "b": 0},
-            legend=dict(
-                bgcolor="rgba(20,20,20,0.85)",
-                bordercolor="#2a2a2a",
-                borderwidth=1,
-                font=dict(color="#ffffff", size=12),
+        if df is not None:
+            color_map = {
+                "Supermarket": "#10b981",
+                "Restaurant": "#f59e0b",
+                "Transit": "#ef4444",
+                "Coffee Shop": "#3b82f6",
+                "Tabacs": "#a855f7",
+                "Other": "#6b7280"
+            }
+
+            fig = px.scatter_map(
+                df,
+                lat="axisX",
+                lon="axisY",
+                hover_name="Name",
+                hover_data={"Type": True, "Street": True, "Location": True, "axisX": False, "axisY": False,
+                            "status": False},
+                color="Type",
+                color_discrete_map=color_map,
+                zoom=12,
+                height=850,
             )
-        )
-        st.plotly_chart(fig, width='stretch')
+            fig.update_traces(marker=dict(size=12, opacity=1))
+            fig.update_layout(
+                map_style="carto-darkmatter",
+                margin={"r": 0, "t": 0, "l": 0, "b": 0},
+                legend=dict(
+                    bgcolor="rgba(20,20,20,0.85)",
+                    bordercolor="#2a2a2a",
+                    borderwidth=1,
+                    font=dict(color="#ffffff", size=12),
+                )
+            )
+            st.plotly_chart(fig, width='stretch')
     else:
         st.info("No establishments to show on the map yet.")
