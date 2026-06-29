@@ -446,8 +446,12 @@ elif st.session_state.page == "Map":
         df = pd.DataFrame(data) if data else None
 
         # Get user location from query params if available
-        user_lat = float(st.query_params.get("ulat", 0)) or None
-        user_lon = float(st.query_params.get("ulon", 0)) or None
+        try:
+            user_lat = float(st.query_params["ulat"])
+            user_lon = float(st.query_params["ulon"])
+        except:
+            user_lat = None
+            user_lon = None
 
         # JS geolocation button
         import streamlit.components.v1 as components
