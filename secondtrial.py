@@ -20,6 +20,15 @@ def save_data(data):
 # ---------- CONFIG ----------
 st.set_page_config(page_title="Cobee Map", layout="wide", initial_sidebar_state="expanded")
 
+st.markdown("""
+<style>
+    [data-testid="stSidebar"] {
+        display: block !important;
+        visibility: visible !important;
+    }
+</style>
+""", unsafe_allow_html=True)
+
 TYPES = ["Supermarket", "Restaurant", "Transit", "Coffee Shop", "Tabacs", "Other"]
 
 BADGE_CLASS = {
