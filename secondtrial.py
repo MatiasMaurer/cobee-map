@@ -212,7 +212,7 @@ with st.sidebar:
         st.rerun()
     if st.button("📄  List", key="sb_list", use_container_width=True):
         st.session_state.page = "📄  List"
-        st.query_params["page"] = "📄  Form"
+        st.query_params["page"] = "📄  List"
         st.rerun()
     if st.button("🗺️  Map", key="sb_map", use_container_width=True):
         st.session_state.page = "🗺️  Map"
