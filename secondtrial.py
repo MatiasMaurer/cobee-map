@@ -238,7 +238,7 @@ st.markdown("""
 
 # ---------- NAVIGATION ----------
 if "page" not in st.session_state:
-    st.session_state.page = "📋  Form"
+    st.session_state.page = "Form"
 
 params = st.query_params
 if "page" in params:
@@ -250,42 +250,42 @@ page = st.session_state.page
 with st.sidebar:
     with st.sidebar:
         st.markdown("<div style='height:1px'></div>", unsafe_allow_html=True)
-        st.markdown("<h1 style='color:#7c3aed; margin-bottom: 0.2rem; font-size: 2rem;'>📍 Cobee</h1>", unsafe_allow_html=True)
+        st.markdown("<h1 style='color:#7c3aed; margin-bottom: 0.2rem; font-size: 2rem;'>Cobee</h1>", unsafe_allow_html=True)
     st.markdown("<p style='color:#7c3aed; font-size:0.8rem; margin-bottom: 1.5rem;'>Establishment map</p>", unsafe_allow_html=True)
     st.markdown("---")
-    if st.button("📋  Form", key="sb_form", use_container_width=True):
-        st.session_state.page = "📋  Form"
-        st.query_params["page"] = "📋  Form"
+    if st.button("Form", key="sb_form", use_container_width=True):
+        st.session_state.page = "Form"
+        st.query_params["page"] = "Form"
         st.rerun()
-    if st.button("📄  List", key="sb_list", use_container_width=True):
-        st.session_state.page = "📄  List"
-        st.query_params["page"] = "📄  List"
+    if st.button("List", key="sb_list", use_container_width=True):
+        st.session_state.page = "List"
+        st.query_params["page"] = "List"
         st.rerun()
-    if st.button("🗺️  Map", key="sb_map", use_container_width=True):
-        st.session_state.page = "🗺️  Map"
-        st.query_params["page"] = "🗺️  Map"
+    if st.button("Map", key="sb_map", use_container_width=True):
+        st.session_state.page = "Map"
+        st.query_params["page"] = "Map"
         st.rerun()
 
 # Mobile bottom nav
 st.markdown(f"""
 <div id="mobile-nav">
-    <a href="?page=📋  Form" class="{'active' if page == '📋  Form' else ''}">
-        <span class="nav-icon">📋</span>
+    <a href="?page=Form" class="{'active' if page == 'Form' else ''}">
+        <span class="nav-icon">Form</span>
         <span>Form</span>
     </a>
-    <a href="?page=📄  List" class="{'active' if page == '📄  List' else ''}">
-        <span class="nav-icon">📄</span>
+    <a href="?page=List" class="{'active' if page == 'List' else ''}">
+        <span class="nav-icon">List</span>
         <span>List</span>
     </a>
-    <a href="?page=🗺️  Map" class="{'active' if page == '🗺️  Map' else ''}">
-        <span class="nav-icon">🗺️</span>
+    <a href="?page=Map" class="{'active' if page == 'Map' else ''}">
+        <span class="nav-icon">Map</span>
         <span>Map</span>
     </a>
 </div>
 """, unsafe_allow_html=True)
 
 # ---------- FORM PAGE ----------
-if st.session_state.page == "📋  Form":
+if st.session_state.page == "Form":
     st.subheader("Establishments")
     form_tab1, form_tab2 = st.tabs(["Add establishment", "Report establishment"])
 
@@ -342,7 +342,7 @@ if st.session_state.page == "📋  Form":
             st.info("No confirmed establishments to report yet.")
 
 # ---------- LIST PAGE ----------
-elif st.session_state.page == "📄  List":
+elif st.session_state.page == "List":
     st.subheader("All establishments")
     data = load_data()
 
@@ -429,7 +429,7 @@ elif st.session_state.page == "📄  List":
         st.info("No establishments added yet.")
 
 # ---------- MAP PAGE ----------
-elif st.session_state.page == "🗺️  Map":
+elif st.session_state.page == "Map":
     data = load_data()
     if data:
         col1, col2 = st.columns(2)
