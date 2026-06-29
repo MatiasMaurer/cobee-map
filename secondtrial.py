@@ -3,8 +3,8 @@ import plotly.express as px
 import pandas as pd
 import json
 import os
+import streamlit.components.v1 as components
 from datetime import datetime
-from streamlit_geolocation import streamlit_geolocation
 
 # ---------- DATA ----------
 DATA_FILE = "establishments.json"
@@ -260,22 +260,19 @@ page = st.session_state.page
 
 # Desktop sidebar
 with st.sidebar:
-    with st.sidebar:
-        st.markdown("<div style='height:1px'></div>", unsafe_allow_html=True)
-        st.markdown("<h1 style='color:#7c3aed; margin-bottom: 0.2rem; font-size: 2rem;'>Cobee</h1>",
-                    unsafe_allow_html=True)
+    st.markdown("<h1 style='color:#7c3aed; margin-bottom: 0.2rem; font-size: 2rem;'>📍 Cobee</h1>", unsafe_allow_html=True)
     st.markdown("<p style='color:#7c3aed; font-size:0.8rem; margin-bottom: 1.5rem;'>Establishment map</p>",
                 unsafe_allow_html=True)
     st.markdown("---")
-    if st.button("Form", key="sb_form", use_container_width=True):
+    if st.button("📋  Form", key="sb_form", use_container_width=True):
         st.session_state.page = "Form"
         st.query_params["page"] = "Form"
         st.rerun()
-    if st.button("List", key="sb_list", use_container_width=True):
+    if st.button("📄  List", key="sb_list", use_container_width=True):
         st.session_state.page = "List"
         st.query_params["page"] = "List"
         st.rerun()
-    if st.button("Map", key="sb_map", use_container_width=True):
+    if st.button("🗺️  Map", key="sb_map", use_container_width=True):
         st.session_state.page = "Map"
         st.query_params["page"] = "Map"
         st.rerun()
@@ -284,13 +281,13 @@ with st.sidebar:
 st.markdown(f"""
 <div id="mobile-nav">
     <a href="?page=Form" class="{'active' if page == 'Form' else ''}">
-        <span class="nav-icon">Form</span>
+        <span class="nav-icon">📋</span><span>Form</span>
     </a>
     <a href="?page=List" class="{'active' if page == 'List' else ''}">
-        <span class="nav-icon">List</span>
+        <span class="nav-icon">📄</span><span>List</span>
     </a>
     <a href="?page=Map" class="{'active' if page == 'Map' else ''}">
-        <span class="nav-icon">Map</span>
+        <span class="nav-icon">🗺️</span><span>Map</span>
     </a>
 </div>
 """, unsafe_allow_html=True)
@@ -302,6 +299,44 @@ if st.session_state.page == "Form":
 
     with form_tab1:
         st.markdown(" ")
+
+        # Geolocation button outside form
+        components.html("""
+        <button onclick="
+            navigator.geolocation.getCurrentPosition(function(pos) {
+                const lat = pos.coords.latitude;
+                const lon = pos.coords.longitude;
+                const url = new URL(window.parent.location.href);
+                url.searchParams.set('flat', lat);
+                url.searchParams.set('flon', lon);
+                url.searchParams.set('page', 'Form');
+                window.parent.location.href = url.toString();
+            }, function(err) {
+                alert('Location access denied. Please enter coordinates manually.');
+            });
+        " style="
+            background-color: #7c3aed;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 10px 20px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            width: 100%;
+            margin-bottom: 8px;
+        ">📍 Use my current location</button>
+        """, height=55)
+
+        # Read location from URL if set by button
+        try:
+            prefill_lat = float(st.query_params["flat"])
+            prefill_lon = float(st.query_params["flon"])
+            st.success(f"✓ Current location detected: {prefill_lat:.6f}, {prefill_lon:.6f}")
+        except:
+            prefill_lat = 0.0
+            prefill_lon = 0.0
+
         with st.form("add_form"):
             col1, col2 = st.columns(2)
             with col1:
@@ -311,26 +346,12 @@ if st.session_state.page == "Form":
             with col2:
                 Type = st.selectbox("Type", TYPES)
                 Number = st.number_input("Number", min_value=0, step=1)
-                use_current = st.checkbox("📍 Use my current location")
-                if use_current:
-                    location = streamlit_geolocation()
-                    if location and location["latitude"] is not None:
-                        axisX = location["latitude"]
-                        axisY = location["longitude"]
-                        st.success("Current location loaded!")
-                        st.write(f"Latitude: {axisX:.6f}")
-                        st.write(f"Longitude: {axisY:.6f}")
-                    else:
-                        st.info("Waiting for browser location...")
-                        axisX = None
-                        axisY = None
-                else:
-                    axisX = st.number_input("Latitude", format="%.8f")
-                    axisY = st.number_input("Longitude", format="%.8f")
+                axisX = st.number_input("Latitude", format="%.8f", value=prefill_lat)
+                axisY = st.number_input("Longitude", format="%.8f", value=prefill_lon)
             submitted = st.form_submit_button("Add establishment", use_container_width=True)
 
         if submitted:
-            if Name and Street and Location and axisX is not None and axisY is not None:
+            if Name and Street and Location:
                 data = load_data()
                 data.append({
                     "Name": Name,
@@ -399,7 +420,7 @@ elif st.session_state.page == "List":
                     <div style="flex:1">
                         <div class="establishment-name">{e['Name']}</div>
                         <div class="establishment-meta">{e['Street']} · {e['Location']}<br>Last updated: {e.get("last_updated","Never")}</div>
-                        </div>
+                    </div>
                     <span class="badge {badge_class}">{e['Type']}</span>
                 </div>
                 """, unsafe_allow_html=True)
