@@ -196,9 +196,6 @@ section[data-testid="stSidebar"][aria-expanded="false"] {
 
     /* Mobile overrides */
     @media (max-width: 768px) {
-        [data-testid="stSidebar"] {
-            display: none !important;
-        }
         .block-container {
             padding-bottom: 90px !important;
             padding-left: 1rem !important;
