@@ -332,7 +332,7 @@ if st.session_state.page == "📋  Form":
         data = load_data()
         confirmed = [e for e in data if e["status"] == "confirmed"]
         if confirmed:
-            names = [e["Name"] for e in confirmed]
+            names = [f"{e['Name']} — {e['Street']} {e['Number']}, {e['Location']}" for e in confirmed]
             selected = st.selectbox("Select establishment to report", names)
             reason = st.text_area("Reason (optional)")
             if st.button("Report establishment", width='stretch'):
@@ -360,7 +360,7 @@ elif st.session_state.page == "📄  List":
 
             badge_class = BADGE_CLASS.get(e["Type"], "badge-other")
 
-            col1, col2 = st.columns([8, 1])
+            col1, col2, col3 = st.columns([7, 1, 1])
             with col1:
                 st.markdown(f"""
                 <div class="establishment-card">
@@ -375,6 +375,17 @@ elif st.session_state.page == "📄  List":
             with col2:
                 if st.button("✏️", key=f"Edit_{i}", help="Edit"):
                     st.session_state["Editing"] = i
+            with col3:
+                if e["status"] == "disputed":
+                    if st.button("⚠️", key=f"Resolve_yes_{i}", help="Confirm card works"):
+                        data[i]["status"] = "confirmed"
+                        save_data(data)
+                        st.rerun()
+                elif e["status"] == "confirmed":
+                    if st.button("❌", key=f"Resolve_no_{i}", help="Confirm card doesn't work"):
+                        data[i]["status"] = "rejected"
+                        save_data(data)
+                        st.rerun()
 
             if st.session_state.get("Editing") == i:
                 with st.form(f"Edit_form_{i}"):
