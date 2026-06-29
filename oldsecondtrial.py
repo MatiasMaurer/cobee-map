@@ -7,18 +7,30 @@ import os
 # ---------- DATA ----------
 DATA_FILE = "establishments.json"
 
+
 def load_data():
     if not os.path.exists(DATA_FILE):
         return []
     with open(DATA_FILE, "r") as f:
         return json.load(f)
 
+
 def save_data(data):
     with open(DATA_FILE, "w") as f:
         json.dump(data, f, indent=4)
 
+
 # ---------- CONFIG ----------
 st.set_page_config(page_title="Cobee Map", layout="wide", initial_sidebar_state="expanded")
+
+st.markdown("""
+<style>
+    [data-testid="stSidebar"] {
+        display: block !important;
+        visibility: visible !important;
+    }
+</style>
+""", unsafe_allow_html=True)
 
 TYPES = ["Supermarket", "Restaurant", "Transit", "Coffee Shop", "Tabacs", "Other"]
 
@@ -37,33 +49,41 @@ st.markdown("""
     /* Background */
     .stApp { background-color: #0f0f0f; }
 
-    /* Sidebar - desktop always visible */
+    /* Sidebar */
     [data-testid="stSidebar"] {
-        background-color: #111111 !important;
-        border-right: 1px solid #1f1f1f !important;
-        display: block !important;
-        visibility: visible !important;
-        min-width: 200px !important;
-        max-width: 200px !important;
+        background-color: #111111;
+        border-right: 1px solid #1f1f1f;
     }
     [data-testid="stSidebar"] * { color: #ffffff; }
 
-    /* Sidebar buttons */
-    [data-testid="stSidebar"] .stButton button {
-        background-color: transparent !important;
-        color: #888888 !important;
-        border: none !important;
-        border-radius: 8px !important;
-        font-size: 1rem !important;
+    /* Sidebar radio buttons */
+    [data-testid="stSidebar"] .stRadio label {
+        display: flex;
+        align-items: center;
+        padding: 14px 16px !important;
+        border-radius: 8px;
+        cursor: pointer;
+        font-size: 3rem !important;
+        line-height: 4 !important;
         font-weight: 500 !important;
-        text-align: left !important;
-        padding: 12px 16px !important;
-        margin-bottom: 4px !important;
-        width: 100% !important;
+        color: #888888 !important;
+        transition: all 0.15s;
+        margin-bottom: 8px;
     }
-    [data-testid="stSidebar"] .stButton button:hover {
-        background-color: #1a1a1a !important;
+    [data-testid="stSidebar"] .stRadio label:hover {
+        background-color: #1a1a1a;
         color: #ffffff !important;
+
+    }
+    [data-testid="stSidebar"] .stRadio [aria-checked="true"] + label,
+    [data-testid="stSidebar"] .stRadio label:has(input:checked) {
+        background-color: #7c3aed;
+        color: #ffffff !important;
+    }
+
+    /* Hide radio dots */
+    [data-testid="stSidebar"] .stRadio [data-baseweb="radio"] > div:first-child {
+        display: none;
     }
 
     /* Main content */
@@ -73,7 +93,7 @@ st.markdown("""
         padding-top: 1rem !important;
     }
 
-    /* Tabs */
+    /* Tabs (for sub-tabs in form) */
     .stTabs [data-baseweb="tab-list"] {
         background-color: #1a1a1a;
         border-radius: 12px;
@@ -126,7 +146,7 @@ st.markdown("""
     /* Headings */
     h1, h2, h3 { color: #ffffff !important; }
 
-    /* Buttons (main content) */
+    /* Buttons */
     .stFormSubmitButton button, .stButton button {
         background-color: #7c3aed !important;
         color: #ffffff !important;
@@ -176,64 +196,17 @@ st.markdown("""
     .badge-tabacs      { background: rgba(168,85,247,0.15);  color: #a855f7; }
     .badge-other       { background: rgba(107,114,128,0.15); color: #6b7280; }
 
-    /* Mobile nav bar */
-    #mobile-nav {
-        display: none;
-    }
-
-    /* Mobile overrides */
-    @media (max-width: 768px) {
-        [data-testid="stSidebar"] {
-            display: none !important;
-        }
-        .block-container {
-            padding-bottom: 90px !important;
-            padding-left: 1rem !important;
-            padding-right: 1rem !important;
-        }
-        #mobile-nav {
-            display: flex !important;
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            z-index: 99999;
-            background-color: #111111;
-            border-top: 1px solid #2a2a2a;
-            justify-content: space-around;
-            align-items: center;
-            padding: 8px 0 24px 0;
-            height: 65px;
-        }
-        #mobile-nav a {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            gap: 3px;
-            text-decoration: none;
-            color: #888888;
-            font-size: 0.65rem;
-            font-weight: 500;
-            flex: 1;
-        }
-        #mobile-nav a.active {
-            color: #7c3aed;
-        }
-        #mobile-nav a span.nav-icon {
-            font-size: 1.3rem;
-        }
-    }
-
     /* Hide streamlit branding */
     #MainMenu, footer, header { visibility: hidden; }
 </style>
 """, unsafe_allow_html=True)
 
+# ---------- SIDEBAR ----------
 # ---------- NAVIGATION ----------
 if "page" not in st.session_state:
     st.session_state.page = "📋  Form"
 
+# Handle query params for mobile navigation
 params = st.query_params
 if "page" in params:
     st.session_state.page = params["page"]
@@ -242,8 +215,10 @@ page = st.session_state.page
 
 # Desktop sidebar
 with st.sidebar:
-    st.markdown("<h1 style='color:#7c3aed; margin-bottom: 0.2rem; font-size: 2rem;'>📍 Cobee</h1>", unsafe_allow_html=True)
-    st.markdown("<p style='color:#7c3aed; font-size:0.8rem; margin-bottom: 1.5rem;'>Establishment map</p>", unsafe_allow_html=True)
+    st.markdown("<h1 style='color:#7c3aed; margin-bottom: 0.2rem; font-size: 2rem;'>📍 Cobee</h1>",
+                unsafe_allow_html=True)
+    st.markdown("<p style='color:#7c3aed; font-size:0.8rem; margin-bottom: 1.5rem;'>Establishment map</p>",
+                unsafe_allow_html=True)
     st.markdown("---")
     if st.button("📋  Form", key="sb_form", use_container_width=True):
         st.session_state.page = "📋  Form"
@@ -260,18 +235,53 @@ with st.sidebar:
 
 # Mobile bottom nav
 st.markdown(f"""
+<style>
+    @media (min-width: 769px) {{
+        #mobile-nav {{ display: none !important; }}
+    }}
+    @media (max-width: 768px) {{
+        [data-testid="stSidebar"] {{ display: none !important; }}
+        .block-container {{ padding-bottom: 80px !important; padding-top: 0.5rem !important; }}
+    }}
+    #mobile-nav {{
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        z-index: 99999;
+        background-color: #111111;
+        border-top: 1px solid #2a2a2a;
+        display: flex;
+        justify-content: space-around;
+        align-items: center;
+        padding: 8px 0 20px 0;
+        height: 60px;
+    }}
+    #mobile-nav a {{
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 2px;
+        text-decoration: none;
+        color: #888888;
+        font-size: 0.65rem;
+        font-weight: 500;
+        padding: 4px 24px;
+        border-radius: 8px;
+    }}
+    #mobile-nav a.active {{ color: #7c3aed; }}
+    #mobile-nav a span.nav-icon {{ font-size: 1.3rem; }}
+</style>
 <div id="mobile-nav">
     <a href="?page=📋  Form" class="{'active' if page == '📋  Form' else ''}">
-        <span class="nav-icon">📋</span>
-        <span>Form</span>
+        <span class="nav-icon">📋</span><span>Form</span>
     </a>
     <a href="?page=📄  List" class="{'active' if page == '📄  List' else ''}">
-        <span class="nav-icon">📄</span>
-        <span>List</span>
+        <span class="nav-icon">📄</span><span>List</span>
     </a>
     <a href="?page=🗺️  Map" class="{'active' if page == '🗺️  Map' else ''}">
-        <span class="nav-icon">🗺️</span>
-        <span>Map</span>
+        <span class="nav-icon">🗺️</span><span>Map</span>
     </a>
 </div>
 """, unsafe_allow_html=True)
@@ -294,7 +304,7 @@ if st.session_state.page == "📋  Form":
                 Number = st.number_input("Number", min_value=0, step=1)
                 axisX = st.number_input("Latitude", format="%.8f")
                 axisY = st.number_input("Longitude", format="%.8f")
-            submitted = st.form_submit_button("Add establishment", use_container_width=True)
+            submitted = st.form_submit_button("Add establishment", width='stretch')
 
         if submitted:
             if Name and Street and Location:
@@ -323,10 +333,9 @@ if st.session_state.page == "📋  Form":
             names = [f"{e['Name']} — {e['Street']} {e['Number']}, {e['Location']}" for e in confirmed]
             selected = st.selectbox("Select establishment to report", names)
             reason = st.text_area("Reason (optional)")
-            if st.button("Report establishment", use_container_width=True):
+            if st.button("Report establishment", width='stretch'):
                 for e in data:
-                    full_name = f"{e['Name']} — {e['Street']} {e['Number']}, {e['Location']}"
-                    if full_name == selected:
+                    if e["Name"] == selected:
                         e["status"] = "disputed"
                 save_data(data)
                 st.warning(f"⚠️ {selected} has been reported and marked as disputed.")
@@ -372,14 +381,14 @@ elif st.session_state.page == "📄  List":
                 if st.button("✏️", key=f"Edit_{i}", help="Edit"):
                     st.session_state["Editing"] = i
             with col3:
-                if e["status"] in ["rejected", "disputed"]:
+                if e["status"] == "rejected" or e["status"] == "disputed":
                     if st.button("✅", key=f"Resolve_yes_{i}", help="Restore — card works here"):
                         data[i]["status"] = "confirmed"
                         data[i]["reports"] = 0
                         save_data(data)
                         st.rerun()
-                if e["status"] in ["confirmed", "disputed"]:
-                    if st.button("⚠️", key=f"Resolve_no_{i}", help="Report — card doesn't work here"):
+                if e["status"] == "confirmed" or e["status"] == "disputed":
+                    if st.button("❌", key=f"Resolve_no_{i}", help="Report — card doesn't work here"):
                         reports = e.get("reports", 0) + 1
                         data[i]["reports"] = reports
                         if reports >= 2:
@@ -401,7 +410,7 @@ elif st.session_state.page == "📄  List":
                         new_numero = st.number_input("Number", min_value=0, step=1, value=e["Number"])
                         new_ejeX = st.number_input("Latitude", format="%.8f", value=e["axisX"])
                         new_ejeY = st.number_input("Longitude", format="%.8f", value=e["axisY"])
-                    save_edit = st.form_submit_button("Save changes", use_container_width=True)
+                    save_edit = st.form_submit_button("Save changes", width='stretch')
 
                 if save_edit:
                     data[i].update({
@@ -428,7 +437,8 @@ elif st.session_state.page == "🗺️  Map":
         with col1:
             type_filter = st.multiselect("Filter by type", TYPES, default=TYPES)
         with col2:
-            status_filter = st.multiselect("Filter by status", ["confirmed", "disputed", "rejected"], default=["confirmed", "disputed", "rejected"])
+            status_filter = st.multiselect("Filter by status", ["confirmed", "disputed", "rejected"],
+                                           default=["confirmed", "disputed", "rejected"])
 
         data = [e for e in data if e["Type"] in type_filter and e["status"] in status_filter]
         df = pd.DataFrame(data) if data else None
@@ -448,7 +458,8 @@ elif st.session_state.page == "🗺️  Map":
                 lat="axisX",
                 lon="axisY",
                 hover_name="Name",
-                hover_data={"Type": True, "Street": True, "Location": True, "axisX": False, "axisY": False, "status": False},
+                hover_data={"Type": True, "Street": True, "Location": True, "axisX": False, "axisY": False,
+                            "status": False},
                 color="Type",
                 color_discrete_map=color_map,
                 zoom=12,
@@ -465,8 +476,6 @@ elif st.session_state.page == "🗺️  Map":
                     font=dict(color="#ffffff", size=12),
                 )
             )
-            st.plotly_chart(fig, use_container_width=True)
-        else:
-            st.info("No establishments match your filters.")
+            st.plotly_chart(fig, width='stretch')
     else:
         st.info("No establishments to show on the map yet.")
