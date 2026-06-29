@@ -200,6 +200,8 @@ st.markdown("""
 
 # ---------- SIDEBAR ----------
 # ---------- NAVIGATION ----------
+with st.sidebar:
+    st.session_state["sidebar_state"] = "expanded"
 if "page" not in st.session_state:
     st.session_state.page = "📋  Form"
 
