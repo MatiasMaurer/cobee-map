@@ -18,7 +18,7 @@ def save_data(data):
         json.dump(data, f, indent=4)
 
 # ---------- CONFIG ----------
-st.set_page_config(page_title="Cobee Map", layout="wide")
+st.set_page_config(page_title="Cobee Map", layout="wide", initial_sidebar_state="expanded")
 
 TYPES = ["Supermarket", "Restaurant", "Transit", "Coffee Shop", "Tabacs", "Other"]
 
