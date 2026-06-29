@@ -126,8 +126,8 @@ st.markdown("""
     /* Headings */
     h1, h2, h3 { color: #ffffff !important; }
 
-    /* Buttons (main content) */
-    .stFormSubmitButton button, .stButton button {
+    /* Buttons (main content only, not sidebar) */
+    .main .stFormSubmitButton button, .main .stButton button {
         background-color: #7c3aed !important;
         color: #ffffff !important;
         border: none !important;
@@ -136,7 +136,7 @@ st.markdown("""
         padding: 8px 20px !important;
         transition: background 0.2s !important;
     }
-    .stFormSubmitButton button:hover, .stButton button:hover {
+    .main .stFormSubmitButton button:hover, .main .stButton button:hover {
         background-color: #6d28d9 !important;
     }
 
