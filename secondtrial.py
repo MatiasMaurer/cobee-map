@@ -21,6 +21,21 @@ def save_data(data):
     with open(DATA_FILE, "w") as f:
         json.dump(data, f, indent=4)
 
+def haversine_distance(lat1, lon1, lat2, lon2):
+    from math import radians, sin, cos, sqrt, atan2
+    R = 6371000  # Earth radius in meters
+    phi1, phi2 = radians(lat1), radians(lat2)
+    dphi = radians(lat2 - lat1)
+    dlambda = radians(lon2 - lon1)
+    a = sin(dphi / 2) ** 2 + cos(phi1) * cos(phi2) * sin(dlambda / 2) ** 2
+    return R * 2 * atan2(sqrt(a), sqrt(1 - a))
+
+
+def format_distance(meters):
+    if meters < 1000:
+        return f"{int(meters)} m"
+    return f"{meters / 1000:.1f} km"
+
 
 # ---------- CONFIG ----------
 st.set_page_config(page_title="Cobee Map", layout="wide", initial_sidebar_state="expanded")
@@ -207,6 +222,11 @@ st.markdown("""
     .badge-coffee      { background: rgba(59,130,246,0.15);  color: #3b82f6; }
     .badge-tabacs      { background: rgba(168,85,247,0.15);  color: #a855f7; }
     .badge-other       { background: rgba(107,114,128,0.15); color: #6b7280; }
+    
+    /* Nearby tab action buttons */
+    .main .stButton button {
+        min-height: 42px !important;
+    }
     
     
     /* Mobile nav bar */
@@ -520,78 +540,165 @@ elif st.session_state.page == "List":
 
 # ---------- MAP PAGE ----------
 elif st.session_state.page == "Map":
-    data = load_data()
-    if data:
-        col1, col2 = st.columns(2)
-        with col1:
-            type_filter = st.multiselect("Filter by type", TYPES, default=TYPES)
-        with col2:
-            status_filter = st.multiselect("Filter by status", ["confirmed", "disputed", "rejected"],
-                                           default=["confirmed", "disputed", "rejected"])
+    map_tab, nearby_tab = st.tabs(["🗺️ Map", "📍 Nearby"])
 
-        filtered_data = [e for e in data if e["Type"] in type_filter and e["status"] in status_filter]
-        df = pd.DataFrame(filtered_data) if filtered_data else None
+    with map_tab:
+        data = load_data()
+        if data:
+            col1, col2 = st.columns(2)
+            with col1:
+                type_filter = st.multiselect("Filter by type", TYPES, default=TYPES)
+            with col2:
+                status_filter = st.multiselect("Filter by status", ["confirmed", "disputed", "rejected"],
+                                               default=["confirmed", "disputed", "rejected"])
 
-        # Geolocation for map
-        st.markdown("**Show my location on the map**")
-        map_location = streamlit_geolocation()
-        if map_location and map_location.get("latitude") is not None:
-            user_lat = map_location["latitude"]
-            user_lon = map_location["longitude"]
-        else:
-            user_lat = None
-            user_lon = None
+            filtered_data = [e for e in data if e["Type"] in type_filter and e["status"] in status_filter]
+            df = pd.DataFrame(filtered_data) if filtered_data else None
 
-        if df is not None:
-            color_map = {
-                "Supermarket": "#10b981",
-                "Restaurant": "#f59e0b",
-                "Transit": "#ef4444",
-                "Coffee Shop": "#3b82f6",
-                "Tabacs": "#a855f7",
-                "Other": "#6b7280"
-            }
+            # Geolocation for map
+            st.markdown("**Show my location on the map**")
+            map_location = streamlit_geolocation()
+            if map_location and map_location.get("latitude") is not None:
+                user_lat = map_location["latitude"]
+                user_lon = map_location["longitude"]
+            else:
+                user_lat = None
+                user_lon = None
 
-            fig = px.scatter_map(
-                df,
-                lat="axisX",
-                lon="axisY",
-                hover_name="Name",
-                hover_data={"Type": True, "Street": True, "Location": True, "axisX": False, "axisY": False,
-                            "status": False},
-                color="Type",
-                color_discrete_map=color_map,
-                zoom=12,
-                height=780,
-            )
+            # Center on a specific establishment if requested from Nearby tab
+            center_lat = st.session_state.get("focus_lat")
+            center_lon = st.session_state.get("focus_lon")
 
-            if user_lat and user_lon:
-                fig.add_scattermap(
-                    lat=[user_lat],
-                    lon=[user_lon],
-                    mode="markers",
-                    marker=dict(size=18, color="#ffffff"),
-                    name="You are here",
-                    hovertemplate="<b>You are here</b><extra></extra>"
+            if df is not None:
+                color_map = {
+                    "Supermarket": "#10b981",
+                    "Restaurant": "#f59e0b",
+                    "Transit": "#ef4444",
+                    "Coffee Shop": "#3b82f6",
+                    "Tabacs": "#a855f7",
+                    "Other": "#6b7280"
+                }
+
+                fig = px.scatter_map(
+                    df,
+                    lat="axisX",
+                    lon="axisY",
+                    hover_name="Name",
+                    hover_data={"Type": True, "Street": True, "Location": True, "axisX": False, "axisY": False,
+                                "status": False},
+                    color="Type",
+                    color_discrete_map=color_map,
+                    zoom=12,
+                    height=780,
                 )
-                fig.update_layout(map=dict(
-                    center=dict(lat=user_lat, lon=user_lon),
-                    zoom=14
-                ))
 
-            fig.update_traces(marker=dict(size=12, opacity=1), selector=dict(type="scattermap"))
-            fig.update_layout(
-                map_style="carto-darkmatter",
-                margin={"r": 0, "t": 0, "l": 0, "b": 0},
-                legend=dict(
-                    bgcolor="rgba(20,20,20,0.85)",
-                    bordercolor="#2a2a2a",
-                    borderwidth=1,
-                    font=dict(color="#ffffff", size=12),
+                if user_lat and user_lon:
+                    fig.add_scattermap(
+                        lat=[user_lat],
+                        lon=[user_lon],
+                        mode="markers",
+                        marker=dict(size=18, color="#ffffff"),
+                        name="You are here",
+                        hovertemplate="<b>You are here</b><extra></extra>"
+                    )
+                    fig.update_layout(map=dict(
+                        center=dict(lat=user_lat, lon=user_lon),
+                        zoom=14
+                    ))
+
+                if center_lat and center_lon:
+                    fig.update_layout(map=dict(
+                        center=dict(lat=center_lat, lon=center_lon),
+                        zoom=16
+                    ))
+                    st.session_state["focus_lat"] = None
+                    st.session_state["focus_lon"] = None
+
+                fig.update_traces(marker=dict(size=12, opacity=1), selector=dict(type="scattermap"))
+                fig.update_layout(
+                    map_style="carto-darkmatter",
+                    margin={"r": 0, "t": 0, "l": 0, "b": 0},
+                    legend=dict(
+                        bgcolor="rgba(20,20,20,0.85)",
+                        bordercolor="#2a2a2a",
+                        borderwidth=1,
+                        font=dict(color="#ffffff", size=12),
+                    )
                 )
-            )
-            st.plotly_chart(fig, use_container_width=True)
+                st.plotly_chart(fig, use_container_width=True)
+            else:
+                st.info("No establishments match your filters.")
         else:
-            st.info("No establishments match your filters.")
-    else:
-        st.info("No establishments to show on the map yet.")
+            st.info("No establishments to show on the map yet.")
+
+    with nearby_tab:
+        data = load_data()
+        confirmed_only = [e for e in data if e["status"] == "confirmed"]
+
+        st.markdown("**Find establishments near you**")
+        nearby_location = streamlit_geolocation()
+
+        if nearby_location and nearby_location.get("latitude") is not None:
+            ulat = nearby_location["latitude"]
+            ulon = nearby_location["longitude"]
+
+            if confirmed_only:
+                for e in confirmed_only:
+                    e["_distance"] = haversine_distance(ulat, ulon, e["axisX"], e["axisY"])
+
+                nearest = sorted(confirmed_only, key=lambda x: x["_distance"])[:10]
+
+                for idx, e in enumerate(nearest):
+                    badge_class = BADGE_CLASS.get(e["Type"], "badge-other")
+                    dist_text = format_distance(e["_distance"])
+
+                    st.markdown(f"""
+                    <div class="establishment-card">
+                        <div class="card-top">
+                            <div class="card-left">
+                                <div class="establishment-name">
+                                    ✅ {e['Name']}
+                                </div>
+                                <div class="establishment-meta">
+                                    {e['Street']} · {e['Location']}
+                                </div>
+                                <div class="establishment-meta">
+                                    📏 {dist_text} away · Updated {e.get("last_updated", "Never")}
+                                </div>
+                            </div>
+                            <span class="badge {badge_class}">
+                                {e['Type']}
+                            </span>
+                        </div>
+                    </div>
+                    """, unsafe_allow_html=True)
+
+                    nav_url = f"https://www.google.com/maps/dir/?api=1&destination={e['axisX']},{e['axisY']}&travelmode=walking"
+
+                    nact1, nact2 = st.columns(2)
+                    with nact1:
+                        if st.button("🗺️ View on Map", key=f"viewmap_{idx}", use_container_width=True):
+                            st.session_state["focus_lat"] = e["axisX"]
+                            st.session_state["focus_lon"] = e["axisY"]
+                            st.rerun()
+                    with nact2:
+                        st.markdown(f"""
+                        <a href="{nav_url}" target="_blank" style="text-decoration:none;">
+                            <div style="
+                                background-color:#7c3aed;
+                                color:#ffffff;
+                                text-align:center;
+                                border-radius:8px;
+                                padding:8px 0;
+                                font-weight:600;
+                                font-size:0.9rem;
+                            ">🧭 Navigate</div>
+                        </a>
+                        """, unsafe_allow_html=True)
+            else:
+                st.info("No confirmed establishments yet.")
+        else:
+            st.warning("📍 Location access is required to show nearby establishments.")
+            st.caption("Tap the location icon above to allow access, or try again below.")
+            if st.button("Try again", use_container_width=True):
+                st.rerun()
