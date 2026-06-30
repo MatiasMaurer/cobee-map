@@ -240,25 +240,6 @@ st.markdown("""
         #mobile-nav a span.nav-icon {
             font-size: 1.3rem;
         }
-    /* Force columns to stay side by side on mobile */
-    [data-testid="stHorizontalBlock"] {
-        flex-wrap: nowrap !important;
-        gap: 4px !important;
-        width: 100% !important;
-    }
-    [data-testid="stHorizontalBlock"] > [data-testid="column"] {
-        flex: unset !important;
-        width: unset !important;
-        min-width: unset !important;
-    }
-    [data-testid="stHorizontalBlock"] > [data-testid="column"]:first-child {
-        flex: 1 1 0% !important;
-        max-width: calc(100% - 130px) !important;
-    }
-    [data-testid="stHorizontalBlock"] > [data-testid="column"]:not(:first-child) {
-        flex: 0 0 38px !important;
-        max-width: 38px !important;
-    }
     }
 
     /* Hide streamlit branding */
