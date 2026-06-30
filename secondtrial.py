@@ -647,7 +647,7 @@ elif st.session_state.page == "Map":
             st.rerun()
 
         if st.session_state.get("requesting_location"):
-            nearby_location = streamlit_geolocation(key="nearby_geo")
+            nearby_location = streamlit_geolocation()
             if nearby_location and nearby_location.get("latitude") is not None:
                 st.session_state["nearby_lat"] = nearby_location["latitude"]
                 st.session_state["nearby_lon"] = nearby_location["longitude"]
