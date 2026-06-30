@@ -243,11 +243,19 @@ st.markdown("""
     /* Force columns to stay side by side on mobile */
     [data-testid="stHorizontalBlock"] {
         flex-wrap: nowrap !important;
+        gap: 4px !important;
     }
     [data-testid="column"] {
         width: auto !important;
         min-width: 0 !important;
-        flex: initial !important;
+    }
+    [data-testid="column"]:first-child {
+        flex: 1 1 auto !important;
+        min-width: 0 !important;
+    }
+    [data-testid="column"]:not(:first-child) {
+        flex: 0 0 auto !important;
+        width: 38px !important;
     }
     }
 
