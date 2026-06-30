@@ -595,3 +595,6 @@ elif st.session_state.page == "Map":
             st.info("No establishments match your filters.")
     else:
         st.info("No establishments to show on the map yet.")
+
+
+Add this to requirements: streamlit-geolocation

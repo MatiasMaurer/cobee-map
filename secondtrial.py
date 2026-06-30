@@ -1,10 +1,10 @@
 import streamlit as st
+import streamlit.components.v1 as components
 import plotly.express as px
 import pandas as pd
 import json
 import os
 from datetime import datetime
-from streamlit_geolocation import streamlit_geolocation
 
 # ---------- DATA ----------
 DATA_FILE = "establishments.json"
@@ -366,17 +366,41 @@ if st.session_state.page == "Form":
 
         # Geolocation outside form so it can render properly
         st.markdown("**Location**")
-        use_current = st.checkbox("Use my current location")
-        geo_lat = None
-        geo_lon = None
-        if use_current:
-            location = streamlit_geolocation()
-            if location and location.get("latitude") is not None:
-                geo_lat = location["latitude"]
-                geo_lon = location["longitude"]
-                st.success(f"Current location detected: {geo_lat:.6f}, {geo_lon:.6f}")
-            else:
-                st.warning("Could not get location. Please enter coordinates manually below.")
+
+        try:
+            geo_lat = float(st.query_params["flat"])
+            geo_lon = float(st.query_params["flon"])
+            st.success(f"Current location detected: {geo_lat:.6f}, {geo_lon:.6f}")
+        except:
+            geo_lat = None
+            geo_lon = None
+
+        components.html("""
+        <button onclick="
+            navigator.geolocation.getCurrentPosition(function(pos) {
+                const lat = pos.coords.latitude;
+                const lon = pos.coords.longitude;
+                const url = new URL(window.parent.location.href);
+                url.searchParams.set('flat', lat);
+                url.searchParams.set('flon', lon);
+                url.searchParams.set('page', 'Form');
+                window.parent.location.href = url.toString();
+            }, function(err) {
+                alert('Could not get location: ' + err.message);
+            });
+        " style="
+            background-color: #7c3aed;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 10px 20px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            width: 100%;
+            margin-bottom: 8px;
+        ">Use my current location</button>
+        """, height=55)
 
         with st.form("add_form"):
             col1, col2 = st.columns(2)
@@ -557,13 +581,38 @@ elif st.session_state.page == "Map":
 
             # Geolocation for map
             st.markdown("**Show my location on the map**")
-            map_location = streamlit_geolocation()
-            if map_location and map_location.get("latitude") is not None:
-                user_lat = map_location["latitude"]
-                user_lon = map_location["longitude"]
-            else:
+            try:
+                user_lat = float(st.query_params["maplat"])
+                user_lon = float(st.query_params["maplon"])
+            except:
                 user_lat = None
                 user_lon = None
+
+            components.html("""
+                        <button onclick="
+                            navigator.geolocation.getCurrentPosition(function(pos) {
+                                const lat = pos.coords.latitude;
+                                const lon = pos.coords.longitude;
+                                const url = new URL(window.parent.location.href);
+                                url.searchParams.set('maplat', lat);
+                                url.searchParams.set('maplon', lon);
+                                url.searchParams.set('page', 'Map');
+                                window.parent.location.href = url.toString();
+                            }, function(err) {
+                                alert('Could not get location: ' + err.message);
+                            });
+                        " style="
+                            background-color: #7c3aed;
+                            color: white;
+                            border: none;
+                            border-radius: 8px;
+                            padding: 10px 20px;
+                            font-size: 0.9rem;
+                            font-weight: 600;
+                            cursor: pointer;
+                            width: 100%;
+                        ">Show my location</button>
+                        """, height=55)
 
             # Center on a specific establishment if requested from Nearby tab
             center_lat = st.session_state.get("focus_lat")
@@ -637,22 +686,45 @@ elif st.session_state.page == "Map":
 
         st.markdown("**Find establishments near you**")
 
+        try:
+            stored_lat = float(st.query_params["nlat"])
+            stored_lon = float(st.query_params["nlon"])
+            st.session_state["nearby_lat"] = stored_lat
+            st.session_state["nearby_lon"] = stored_lon
+        except:
+            pass
+
         if "nearby_lat" not in st.session_state:
             st.session_state["nearby_lat"] = None
             st.session_state["nearby_lon"] = None
 
-        button_label = "🔄 Refresh Location" if st.session_state["nearby_lat"] else "📍 Find Nearby Establishments"
-        if st.button(button_label, key="nearby_locate_btn", use_container_width=True):
-            st.session_state["requesting_location"] = True
-            st.rerun()
+        button_label = "Refresh Location" if st.session_state["nearby_lat"] else "Find Nearby Establishments"
 
-        if st.session_state.get("requesting_location"):
-            nearby_location = streamlit_geolocation()
-            if nearby_location and nearby_location.get("latitude") is not None:
-                st.session_state["nearby_lat"] = nearby_location["latitude"]
-                st.session_state["nearby_lon"] = nearby_location["longitude"]
-                st.session_state["requesting_location"] = False
-                st.rerun()
+        components.html(f"""
+        <button onclick="
+            navigator.geolocation.getCurrentPosition(function(pos) {{
+                const lat = pos.coords.latitude;
+                const lon = pos.coords.longitude;
+                const url = new URL(window.parent.location.href);
+                url.searchParams.set('nlat', lat);
+                url.searchParams.set('nlon', lon);
+                url.searchParams.set('page', 'Map');
+                window.parent.location.href = url.toString();
+            }}, function(err) {{
+                alert('Could not get location: ' + err.message);
+            }});
+        " style="
+            background-color: #7c3aed;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 10px 20px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            width: 100%;
+        ">{button_label}</button>
+        """, height=55)
 
         if st.session_state["nearby_lat"] is not None:
             ulat = st.session_state["nearby_lat"]
@@ -679,7 +751,7 @@ elif st.session_state.page == "Map":
                                     {e['Street']} · {e['Location']}
                                 </div>
                                 <div class="establishment-meta">
-                                    📏 {dist_text} away · Updated {e.get("last_updated", "Never")}
+                                    {dist_text} away · Updated {e.get("last_updated", "Never")}
                                 </div>
                             </div>
                             <span class="badge {badge_class}">
@@ -693,7 +765,7 @@ elif st.session_state.page == "Map":
 
                     nact1, nact2 = st.columns(2)
                     with nact1:
-                        if st.button("🗺️ View on Map", key=f"viewmap_{idx}", use_container_width=True):
+                        if st.button("View on Map", key=f"viewmap_{idx}", use_container_width=True):
                             st.session_state["focus_lat"] = e["axisX"]
                             st.session_state["focus_lon"] = e["axisY"]
                             st.rerun()
@@ -708,10 +780,10 @@ elif st.session_state.page == "Map":
                                 padding:8px 0;
                                 font-weight:600;
                                 font-size:0.9rem;
-                            ">🧭 Navigate</div>
+                            ">Navigate</div>
                         </a>
                         """, unsafe_allow_html=True)
-                else:
-                    st.info("No confirmed establishments yet.")
             else:
-                st.warning("📍 Tap the button above to allow location access and find establishments near you.")
+                st.info("No confirmed establishments yet.")
+        else:
+            st.info("Tap the button above to allow location access and find establishments near you.")
