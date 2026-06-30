@@ -240,6 +240,15 @@ st.markdown("""
         #mobile-nav a span.nav-icon {
             font-size: 1.3rem;
         }
+    /* Force columns to stay side by side on mobile */
+    [data-testid="stHorizontalBlock"] {
+        flex-wrap: nowrap !important;
+    }
+    [data-testid="column"] {
+        width: auto !important;
+        min-width: 0 !important;
+        flex: initial !important;
+    }
     }
 
     /* Hide streamlit branding */
