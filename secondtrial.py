@@ -244,18 +244,20 @@ st.markdown("""
     [data-testid="stHorizontalBlock"] {
         flex-wrap: nowrap !important;
         gap: 4px !important;
+        width: 100% !important;
     }
-    [data-testid="column"] {
-        width: auto !important;
-        min-width: 0 !important;
+    [data-testid="stHorizontalBlock"] > [data-testid="column"] {
+        flex: unset !important;
+        width: unset !important;
+        min-width: unset !important;
     }
-    [data-testid="column"]:first-child {
-        flex: 1 1 auto !important;
-        min-width: 0 !important;
+    [data-testid="stHorizontalBlock"] > [data-testid="column"]:first-child {
+        flex: 1 1 0% !important;
+        max-width: calc(100% - 130px) !important;
     }
-    [data-testid="column"]:not(:first-child) {
-        flex: 0 0 auto !important;
-        width: 38px !important;
+    [data-testid="stHorizontalBlock"] > [data-testid="column"]:not(:first-child) {
+        flex: 0 0 38px !important;
+        max-width: 38px !important;
     }
     }
 
