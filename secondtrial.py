@@ -1,10 +1,10 @@
 import streamlit as st
-import streamlit.components.v1 as components
 import plotly.express as px
 import pandas as pd
 import json
 import os
 from datetime import datetime
+from streamlit_geolocation import streamlit_geolocation
 
 # ---------- DATA ----------
 DATA_FILE = "establishments.json"
@@ -20,6 +20,7 @@ def load_data():
 def save_data(data):
     with open(DATA_FILE, "w") as f:
         json.dump(data, f, indent=4)
+
 
 def haversine_distance(lat1, lon1, lat2, lon2):
     from math import radians, sin, cos, sqrt, atan2
@@ -222,13 +223,12 @@ st.markdown("""
     .badge-coffee      { background: rgba(59,130,246,0.15);  color: #3b82f6; }
     .badge-tabacs      { background: rgba(168,85,247,0.15);  color: #a855f7; }
     .badge-other       { background: rgba(107,114,128,0.15); color: #6b7280; }
-    
+
     /* Nearby tab action buttons */
     .main .stButton button {
         min-height: 42px !important;
     }
-    
-    
+
     /* Mobile nav bar */
     #mobile-nav {
         display: none;
@@ -364,57 +364,29 @@ if st.session_state.page == "Form":
     with form_tab1:
         st.markdown(" ")
 
-        # Geolocation outside form so it can render properly
         st.markdown("**Location**")
 
-        try:
-            geo_lat = float(st.query_params["flat"])
-            geo_lon = float(st.query_params["flon"])
+        if "form_geo_active" not in st.session_state:
+            st.session_state["form_geo_active"] = False
+
+        geo_lat = st.session_state.get("form_geo_lat")
+        geo_lon = st.session_state.get("form_geo_lon")
+
+        if geo_lat is not None:
             st.success(f"Current location detected: {geo_lat:.6f}, {geo_lon:.6f}")
-        except:
-            geo_lat = None
-            geo_lon = None
 
-        geo_html = """
-                    <button id="map-geo-btn" style="
-                        background-color: #7c3aed;
-                        color: white;
-                        border: none;
-                        border-radius: 8px;
-                        padding: 10px 20px;
-                        font-size: 0.9rem;
-                        font-weight: 600;
-                        cursor: pointer;
-                        width: 100%;
-                    ">Show my location</button>
-                    <script>
-                        document.getElementById('map-geo-btn').addEventListener('click', function() {
-                            navigator.geolocation.getCurrentPosition(function(pos) {
-                                const lat = pos.coords.latitude;
-                                const lon = pos.coords.longitude;
-                                window.parent.postMessage({type: 'geo', lat: lat, lon: lon, target: 'map'}, '*');
-                            }, function(err) {
-                                alert('Could not get location: ' + err.message);
-                            });
-                        });
-                    </script>
-                    """
-        components.html(geo_html, height=55)
+        if st.button("Use my current location", key="form_geo_trigger", use_container_width=True):
+            st.session_state["form_geo_active"] = True
 
-        geo_listener = """
-                    <script>
-                        window.addEventListener('message', function(event) {
-                            if (event.data.type === 'geo' && event.data.target === 'map') {
-                                const url = new URL(window.location.href);
-                                url.searchParams.set('maplat', event.data.lat);
-                                url.searchParams.set('maplon', event.data.lon);
-                                url.searchParams.set('page', 'Map');
-                                window.location.href = url.toString();
-                            }
-                        });
-                    </script>
-                    """
-        st.markdown(geo_listener, unsafe_allow_html=True)
+        form_geo_slot = st.empty()
+        if st.session_state["form_geo_active"]:
+            with form_geo_slot.container():
+                location = streamlit_geolocation()
+                if location and location.get("latitude") is not None:
+                    st.session_state["form_geo_lat"] = location["latitude"]
+                    st.session_state["form_geo_lon"] = location["longitude"]
+                    st.session_state["form_geo_active"] = False
+                    st.rerun()
 
         with st.form("add_form"):
             col1, col2 = st.columns(2)
@@ -449,7 +421,7 @@ if st.session_state.page == "Form":
                     "last_updated": datetime.now().strftime("%d/%m/%Y %H:%M")
                 })
                 save_data(data)
-                st.success(f"✅ {Name} added successfully!")
+                st.success(f"{Name} added successfully!")
             else:
                 st.error("Please fill in name, street and city.")
 
@@ -468,7 +440,7 @@ if st.session_state.page == "Form":
                         e["status"] = "disputed"
                         e["last_updated"] = datetime.now().strftime("%d/%m/%Y %H:%M")
                 save_data(data)
-                st.warning(f"⚠️ {selected} has been reported and marked as disputed.")
+                st.warning(f"{selected} has been reported and marked as disputed.")
         else:
             st.info("No confirmed establishments to report yet.")
 
@@ -477,7 +449,7 @@ elif st.session_state.page == "List":
     st.subheader("All establishments")
     data = load_data()
 
-    search = st.text_input("🔍 Search", placeholder="Search by name, street or region...")
+    search = st.text_input("Search", placeholder="Search by name, street or region...")
     if search:
         data = [e for e in data if
                 search.lower() in e["Name"].lower() or
@@ -517,18 +489,18 @@ elif st.session_state.page == "List":
             """, unsafe_allow_html=True)
             action1, action2, action3 = st.columns(3)
             with action1:
-                if st.button("✏️ Edit", key=f"Edit_{i}", use_container_width=True):
+                if st.button("Edit", key=f"Edit_{i}", use_container_width=True):
                     st.session_state["Editing"] = i
             with action2:
                 if e["status"] in ["rejected", "disputed"]:
-                    if st.button("✅ Restore", key=f"Resolve_yes_{i}", use_container_width=True):
+                    if st.button("Restore", key=f"Resolve_yes_{i}", use_container_width=True):
                         data[i]["status"] = "confirmed"
                         data[i]["reports"] = 0
                         data[i]["last_updated"] = datetime.now().strftime("%d/%m/%Y %H:%M")
                         save_data(data)
                         st.rerun()
                 else:
-                    if st.button("⚠️ Report", key=f"Resolve_no_{i}", use_container_width=True):
+                    if st.button("Report", key=f"Resolve_no_{i}", use_container_width=True):
                         reports = e.get("reports", 0) + 1
                         data[i]["reports"] = reports
                         if reports >= 2:
@@ -539,7 +511,7 @@ elif st.session_state.page == "List":
                         save_data(data)
                         st.rerun()
             with action3:
-                if st.button("🗑 Delete", key=f"Delete_{i}", use_container_width=True):
+                if st.button("Delete", key=f"Delete_{i}", use_container_width=True):
                     data.pop(i)
                     save_data(data)
                     st.rerun()
@@ -571,7 +543,7 @@ elif st.session_state.page == "List":
                     data[i]["last_updated"] = datetime.now().strftime("%d/%m/%Y %H:%M")
                     save_data(data)
                     st.session_state["Editing"] = None
-                    st.success("✅ Changes saved!")
+                    st.success("Changes saved!")
                     st.rerun()
     else:
         st.info("No establishments added yet.")
@@ -595,38 +567,25 @@ elif st.session_state.page == "Map":
 
             # Geolocation for map
             st.markdown("**Show my location on the map**")
-            try:
-                user_lat = float(st.query_params["maplat"])
-                user_lon = float(st.query_params["maplon"])
-            except:
-                user_lat = None
-                user_lon = None
 
-            components.html("""
-                        <button onclick="
-                            navigator.geolocation.getCurrentPosition(function(pos) {
-                                const lat = pos.coords.latitude;
-                                const lon = pos.coords.longitude;
-                                const url = new URL(window.parent.location.href);
-                                url.searchParams.set('maplat', lat);
-                                url.searchParams.set('maplon', lon);
-                                url.searchParams.set('page', 'Map');
-                                window.parent.location.href = url.toString();
-                            }, function(err) {
-                                alert('Could not get location: ' + err.message);
-                            });
-                        " style="
-                            background-color: #7c3aed;
-                            color: white;
-                            border: none;
-                            border-radius: 8px;
-                            padding: 10px 20px;
-                            font-size: 0.9rem;
-                            font-weight: 600;
-                            cursor: pointer;
-                            width: 100%;
-                        ">Show my location</button>
-                        """, height=55)
+            if "map_geo_active" not in st.session_state:
+                st.session_state["map_geo_active"] = False
+
+            user_lat = st.session_state.get("map_geo_lat")
+            user_lon = st.session_state.get("map_geo_lon")
+
+            if st.button("Show my location", key="map_geo_trigger", use_container_width=True):
+                st.session_state["map_geo_active"] = True
+
+            map_geo_slot = st.empty()
+            if st.session_state["map_geo_active"]:
+                with map_geo_slot.container():
+                    map_location = streamlit_geolocation()
+                    if map_location and map_location.get("latitude") is not None:
+                        st.session_state["map_geo_lat"] = map_location["latitude"]
+                        st.session_state["map_geo_lon"] = map_location["longitude"]
+                        st.session_state["map_geo_active"] = False
+                        st.rerun()
 
             # Center on a specific establishment if requested from Nearby tab
             center_lat = st.session_state.get("focus_lat")
@@ -700,45 +659,26 @@ elif st.session_state.page == "Map":
 
         st.markdown("**Find establishments near you**")
 
-        try:
-            stored_lat = float(st.query_params["nlat"])
-            stored_lon = float(st.query_params["nlon"])
-            st.session_state["nearby_lat"] = stored_lat
-            st.session_state["nearby_lon"] = stored_lon
-        except:
-            pass
-
         if "nearby_lat" not in st.session_state:
             st.session_state["nearby_lat"] = None
             st.session_state["nearby_lon"] = None
+        if "nearby_geo_active" not in st.session_state:
+            st.session_state["nearby_geo_active"] = False
 
         button_label = "Refresh Location" if st.session_state["nearby_lat"] else "Find Nearby Establishments"
 
-        components.html(f"""
-        <button onclick="
-            navigator.geolocation.getCurrentPosition(function(pos) {{
-                const lat = pos.coords.latitude;
-                const lon = pos.coords.longitude;
-                const url = new URL(window.parent.location.href);
-                url.searchParams.set('nlat', lat);
-                url.searchParams.set('nlon', lon);
-                url.searchParams.set('page', 'Map');
-                window.parent.location.href = url.toString();
-            }}, function(err) {{
-                alert('Could not get location: ' + err.message);
-            }});
-        " style="
-            background-color: #7c3aed;
-            color: white;
-            border: none;
-            border-radius: 8px;
-            padding: 10px 20px;
-            font-size: 0.9rem;
-            font-weight: 600;
-            cursor: pointer;
-            width: 100%;
-        ">{button_label}</button>
-        """, height=55)
+        if st.button(button_label, key="nearby_geo_trigger", use_container_width=True):
+            st.session_state["nearby_geo_active"] = True
+
+        nearby_geo_slot = st.empty()
+        if st.session_state["nearby_geo_active"]:
+            with nearby_geo_slot.container():
+                nearby_location = streamlit_geolocation()
+                if nearby_location and nearby_location.get("latitude") is not None:
+                    st.session_state["nearby_lat"] = nearby_location["latitude"]
+                    st.session_state["nearby_lon"] = nearby_location["longitude"]
+                    st.session_state["nearby_geo_active"] = False
+                    st.rerun()
 
         if st.session_state["nearby_lat"] is not None:
             ulat = st.session_state["nearby_lat"]
@@ -759,7 +699,7 @@ elif st.session_state.page == "Map":
                         <div class="card-top">
                             <div class="card-left">
                                 <div class="establishment-name">
-                                    ✅ {e['Name']}
+                                    {e['Name']}
                                 </div>
                                 <div class="establishment-meta">
                                     {e['Street']} · {e['Location']}
