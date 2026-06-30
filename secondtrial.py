@@ -375,7 +375,7 @@ if st.session_state.page == "Form":
             geo_lat = None
             geo_lon = None
 
-        st.markdown("""
+        geo_html = """
                     <button id="map-geo-btn" style="
                         background-color: #7c3aed;
                         color: white;
@@ -392,17 +392,29 @@ if st.session_state.page == "Form":
                             navigator.geolocation.getCurrentPosition(function(pos) {
                                 const lat = pos.coords.latitude;
                                 const lon = pos.coords.longitude;
-                                const url = new URL(window.location.href);
-                                url.searchParams.set('maplat', lat);
-                                url.searchParams.set('maplon', lon);
-                                url.searchParams.set('page', 'Map');
-                                window.location.href = url.toString();
+                                window.parent.postMessage({type: 'geo', lat: lat, lon: lon, target: 'map'}, '*');
                             }, function(err) {
                                 alert('Could not get location: ' + err.message);
                             });
                         });
                     </script>
-                    """, unsafe_allow_html=True)
+                    """
+        components.html(geo_html, height=55)
+
+        geo_listener = """
+                    <script>
+                        window.addEventListener('message', function(event) {
+                            if (event.data.type === 'geo' && event.data.target === 'map') {
+                                const url = new URL(window.location.href);
+                                url.searchParams.set('maplat', event.data.lat);
+                                url.searchParams.set('maplon', event.data.lon);
+                                url.searchParams.set('page', 'Map');
+                                window.location.href = url.toString();
+                            }
+                        });
+                    </script>
+                    """
+        st.markdown(geo_listener, unsafe_allow_html=True)
 
         with st.form("add_form"):
             col1, col2 = st.columns(2)
