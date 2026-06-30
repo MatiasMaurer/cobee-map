@@ -587,10 +587,6 @@ elif st.session_state.page == "Map":
                         st.session_state["map_geo_active"] = False
                         st.rerun()
 
-            # Center on a specific establishment if requested from Nearby tab
-            center_lat = st.session_state.get("focus_lat")
-            center_lon = st.session_state.get("focus_lon")
-
             if df is not None:
                 color_map = {
                     "Supermarket": "#10b981",
@@ -627,14 +623,6 @@ elif st.session_state.page == "Map":
                         center=dict(lat=user_lat, lon=user_lon),
                         zoom=14
                     ))
-
-                if center_lat and center_lon:
-                    fig.update_layout(map=dict(
-                        center=dict(lat=center_lat, lon=center_lon),
-                        zoom=16
-                    ))
-                    st.session_state["focus_lat"] = None
-                    st.session_state["focus_lon"] = None
 
                 fig.update_traces(marker=dict(size=12, opacity=1), selector=dict(type="scattermap"))
                 fig.update_layout(
@@ -714,29 +702,24 @@ elif st.session_state.page == "Map":
                         </div>
                     </div>
                     """, unsafe_allow_html=True)
-
                     nav_url = f"https://www.google.com/maps/dir/?api=1&destination={e['axisX']},{e['axisY']}&travelmode=walking"
 
-                    nact1, nact2 = st.columns(2)
-                    with nact1:
-                        if st.button("View on Map", key=f"viewmap_{idx}", use_container_width=True):
-                            st.session_state["focus_lat"] = e["axisX"]
-                            st.session_state["focus_lon"] = e["axisY"]
-                            st.rerun()
-                    with nact2:
-                        st.markdown(f"""
-                        <a href="{nav_url}" target="_blank" style="text-decoration:none;">
-                            <div style="
-                                background-color:#7c3aed;
-                                color:#ffffff;
-                                text-align:center;
-                                border-radius:8px;
-                                padding:8px 0;
-                                font-weight:600;
-                                font-size:0.9rem;
-                            ">Navigate</div>
-                        </a>
-                        """, unsafe_allow_html=True)
+                    st.markdown(f"""
+                    <a href="{nav_url}" target="_blank" style="text-decoration:none;">
+                        <div style="
+                            background-color:#7c3aed;
+                            color:#ffffff;
+                            text-align:center;
+                            border-radius:8px;
+                            padding:10px 0;
+                            font-weight:600;
+                            font-size:0.95rem;
+                            margin-bottom:18px;
+                        ">
+                            Navigate
+                        </div>
+                    </a>
+                    """, unsafe_allow_html=True)
             else:
                 st.info("No confirmed establishments yet.")
         else:
