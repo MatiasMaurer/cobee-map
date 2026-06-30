@@ -164,6 +164,25 @@ st.markdown("""
         align-items: center;
         gap: 12px;
     }
+    .card-top{
+        display:flex;
+        justify-content:space-between;
+        align-items:flex-start;
+        gap:16px;
+    }
+    .card-left{
+        flex:1;
+        min-width:0;
+    }
+    .card-left .establishment-name{
+        margin-bottom:6px;
+    }
+    .card-left .establishment-meta{
+        margin-top:3px;
+    }
+    .card-top .badge{
+        white-space:nowrap;
+    }
     .establishment-name {
         color: #ffffff;
         font-weight: 600;
@@ -208,6 +227,28 @@ st.markdown("""
             padding-bottom: 90px !important;
             padding-left: 1rem !important;
             padding-right: 1rem !important;
+        }
+        .establishment-card{
+            margin-bottom:6px;
+        }
+        .card-top{
+            flex-direction:column;
+            gap:10px;
+        }
+        .card-top .badge{
+            align-self:flex-start;
+        }
+        div[data-testid="stHorizontalBlock"]{
+            gap:8px;
+            margin-bottom:18px;
+        }
+        div[data-testid="stHorizontalBlock"] > div{
+            flex:1;
+        }
+        html,
+        body,
+        .stApp{
+            overflow-x:hidden;
         }
         #mobile-nav {
             display: flex !important;
@@ -396,31 +437,40 @@ elif st.session_state.page == "List":
 
             badge_class = BADGE_CLASS.get(e["Type"], "badge-other")
 
-            col1, col2, col3, col4 = st.columns([7, 1, 1, 1])
-            with col1:
-                st.markdown(f"""
-                            <div class="establishment-card">
-                                <span style="font-size:1.2rem">{icon}</span>
-                                <div style="flex:1">
-                                    <div class="establishment-name">{e['Name']}</div>
-                                    <div class="establishment-meta">{e['Street']} · {e['Location']}<br>Last updated: {e.get("last_updated", "Never")}</div>
-                                </div>
-                                <span class="badge {badge_class}">{e['Type']}</span>
-                            </div>
-                            """, unsafe_allow_html=True)
-            with col2:
-                if st.button("✏️", key=f"Edit_{i}", help="Edit"):
+            st.markdown(f"""
+            <div class="establishment-card">
+                <div class="card-top">
+                    <div class="card-left">
+                        <div class="establishment-name">
+                            {icon} {e['Name']}
+                        </div>
+                        <div class="establishment-meta">
+                            {e['Street']} · {e['Location']}
+                        </div>
+                        <div class="establishment-meta">
+                            Updated {e.get("last_updated", "Never")}
+                        </div>
+                    </div>
+                    <span class="badge {badge_class}">
+                        {e['Type']}
+                    </span>
+                </div>
+            </div>
+            """, unsafe_allow_html=True)
+            action1, action2, action3 = st.columns(3)
+            with action1:
+                if st.button("✏️ Edit", key=f"Edit_{i}", use_container_width=True):
                     st.session_state["Editing"] = i
-            with col3:
+            with action2:
                 if e["status"] in ["rejected", "disputed"]:
-                    if st.button("✅", key=f"Resolve_yes_{i}", help="Restore — card works here"):
+                    if st.button("✅ Restore", key=f"Resolve_yes_{i}", use_container_width=True):
                         data[i]["status"] = "confirmed"
                         data[i]["reports"] = 0
                         data[i]["last_updated"] = datetime.now().strftime("%d/%m/%Y %H:%M")
                         save_data(data)
                         st.rerun()
-                if e["status"] in ["confirmed", "disputed"]:
-                    if st.button("⚠️", key=f"Resolve_no_{i}", help="Report — card doesn't work here"):
+                else:
+                    if st.button("⚠️ Report", key=f"Resolve_no_{i}", use_container_width=True):
                         reports = e.get("reports", 0) + 1
                         data[i]["reports"] = reports
                         if reports >= 2:
@@ -430,8 +480,8 @@ elif st.session_state.page == "List":
                         data[i]["last_updated"] = datetime.now().strftime("%d/%m/%Y %H:%M")
                         save_data(data)
                         st.rerun()
-            with col4:
-                if st.button("🗑️", key=f"Delete_{i}", help="Delete establishment"):
+            with action3:
+                if st.button("🗑 Delete", key=f"Delete_{i}", use_container_width=True):
                     data.pop(i)
                     save_data(data)
                     st.rerun()

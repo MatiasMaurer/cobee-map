@@ -3,6 +3,8 @@ import plotly.express as px
 import pandas as pd
 import json
 import os
+from datetime import datetime
+from streamlit_geolocation import streamlit_geolocation
 
 # ---------- DATA ----------
 DATA_FILE = "establishments.json"
@@ -58,7 +60,6 @@ st.markdown("""
         margin-left: 0px !important;
         transform: none !important;
     }
-
 
     /* Sidebar buttons */
     [data-testid="stSidebar"] .stButton button {
@@ -188,6 +189,7 @@ st.markdown("""
     .badge-tabacs      { background: rgba(168,85,247,0.15);  color: #a855f7; }
     .badge-other       { background: rgba(107,114,128,0.15); color: #6b7280; }
 
+
     /* Mobile nav bar */
     #mobile-nav {
         display: none;
@@ -300,6 +302,21 @@ if st.session_state.page == "Form":
 
     with form_tab1:
         st.markdown(" ")
+
+        # Geolocation outside form so it can render properly
+        st.markdown("**Location**")
+        use_current = st.checkbox("Use my current location")
+        geo_lat = None
+        geo_lon = None
+        if use_current:
+            location = streamlit_geolocation()
+            if location and location.get("latitude") is not None:
+                geo_lat = location["latitude"]
+                geo_lon = location["longitude"]
+                st.success(f"Current location detected: {geo_lat:.6f}, {geo_lon:.6f}")
+            else:
+                st.warning("Could not get location. Please enter coordinates manually below.")
+
         with st.form("add_form"):
             col1, col2 = st.columns(2)
             with col1:
@@ -309,8 +326,12 @@ if st.session_state.page == "Form":
             with col2:
                 Type = st.selectbox("Type", TYPES)
                 Number = st.number_input("Number", min_value=0, step=1)
-                axisX = st.number_input("Latitude", format="%.8f")
-                axisY = st.number_input("Longitude", format="%.8f")
+                if geo_lat is not None:
+                    axisX = st.number_input("Latitude", format="%.8f", value=float(geo_lat))
+                    axisY = st.number_input("Longitude", format="%.8f", value=float(geo_lon))
+                else:
+                    axisX = st.number_input("Latitude", format="%.8f")
+                    axisY = st.number_input("Longitude", format="%.8f")
             submitted = st.form_submit_button("Add establishment", use_container_width=True)
 
         if submitted:
@@ -325,7 +346,8 @@ if st.session_state.page == "Form":
                     "axisX": axisX,
                     "axisY": axisY,
                     "status": "confirmed",
-                    "reports": 0
+                    "reports": 0,
+                    "last_updated": datetime.now().strftime("%d/%m/%Y %H:%M")
                 })
                 save_data(data)
                 st.success(f"✅ {Name} added successfully!")
@@ -345,6 +367,7 @@ if st.session_state.page == "Form":
                     full_name = f"{e['Name']} — {e['Street']} {e['Number']}, {e['Location']}"
                     if full_name == selected:
                         e["status"] = "disputed"
+                        e["last_updated"] = datetime.now().strftime("%d/%m/%Y %H:%M")
                 save_data(data)
                 st.warning(f"⚠️ {selected} has been reported and marked as disputed.")
         else:
@@ -376,15 +399,15 @@ elif st.session_state.page == "List":
             col1, col2, col3, col4 = st.columns([7, 1, 1, 1])
             with col1:
                 st.markdown(f"""
-                <div class="establishment-card">
-                    <span style="font-size:1.2rem">{icon}</span>
-                    <div style="flex:1">
-                        <div class="establishment-name">{e['Name']}</div>
-                        <div class="establishment-meta">{e['Street']} · {e['Location']}</div>
-                    </div>
-                    <span class="badge {badge_class}">{e['Type']}</span>
-                </div>
-                """, unsafe_allow_html=True)
+                            <div class="establishment-card">
+                                <span style="font-size:1.2rem">{icon}</span>
+                                <div style="flex:1">
+                                    <div class="establishment-name">{e['Name']}</div>
+                                    <div class="establishment-meta">{e['Street']} · {e['Location']}<br>Last updated: {e.get("last_updated", "Never")}</div>
+                                </div>
+                                <span class="badge {badge_class}">{e['Type']}</span>
+                            </div>
+                            """, unsafe_allow_html=True)
             with col2:
                 if st.button("✏️", key=f"Edit_{i}", help="Edit"):
                     st.session_state["Editing"] = i
@@ -393,6 +416,7 @@ elif st.session_state.page == "List":
                     if st.button("✅", key=f"Resolve_yes_{i}", help="Restore — card works here"):
                         data[i]["status"] = "confirmed"
                         data[i]["reports"] = 0
+                        data[i]["last_updated"] = datetime.now().strftime("%d/%m/%Y %H:%M")
                         save_data(data)
                         st.rerun()
                 if e["status"] in ["confirmed", "disputed"]:
@@ -403,6 +427,7 @@ elif st.session_state.page == "List":
                             data[i]["status"] = "rejected"
                         else:
                             data[i]["status"] = "disputed"
+                        data[i]["last_updated"] = datetime.now().strftime("%d/%m/%Y %H:%M")
                         save_data(data)
                         st.rerun()
             with col4:
@@ -435,6 +460,7 @@ elif st.session_state.page == "List":
                         "axisX": new_ejeX,
                         "axisY": new_ejeY,
                     })
+                    data[i]["last_updated"] = datetime.now().strftime("%d/%m/%Y %H:%M")
                     save_data(data)
                     st.session_state["Editing"] = None
                     st.success("✅ Changes saved!")
@@ -456,40 +482,15 @@ elif st.session_state.page == "Map":
         filtered_data = [e for e in data if e["Type"] in type_filter and e["status"] in status_filter]
         df = pd.DataFrame(filtered_data) if filtered_data else None
 
-        try:
-            user_lat = float(st.query_params["ulat"])
-            user_lon = float(st.query_params["ulon"])
-        except:
+        # Geolocation for map
+        st.markdown("**Show my location on the map**")
+        map_location = streamlit_geolocation()
+        if map_location and map_location.get("latitude") is not None:
+            user_lat = map_location["latitude"]
+            user_lon = map_location["longitude"]
+        else:
             user_lat = None
             user_lon = None
-
-        import streamlit.components.v1 as components
-
-        components.html("""
-        <button onclick="
-            navigator.geolocation.getCurrentPosition(function(pos) {
-                const lat = pos.coords.latitude;
-                const lon = pos.coords.longitude;
-                const url = new URL(window.parent.location.href);
-                url.searchParams.set('ulat', lat);
-                url.searchParams.set('ulon', lon);
-                url.searchParams.set('page', 'Map');
-                window.parent.location.href = url.toString();
-            }, function(err) {
-                alert('Could not get location: ' + err.message);
-            });
-        " style="
-            background-color: #7c3aed;
-            color: white;
-            border: none;
-            border-radius: 8px;
-            padding: 10px 20px;
-            font-size: 0.9rem;
-            font-weight: 600;
-            cursor: pointer;
-            width: 100%;
-        ">📍 Show my location</button>
-        """, height=55)
 
         if df is not None:
             color_map = {
