@@ -717,7 +717,7 @@ elif st.session_state.page == "Map":
 
                     nav_url = f"https://www.google.com/maps/dir/?api=1&destination={e['axisX']},{e['axisY']}&travelmode=walking"
 
-                    nact1= st.columns(2)
+                    nact1, nact2 = st.columns(2)
                     with nact1:
                         if st.button("View on Map", key=f"viewmap_{idx}", use_container_width=True):
                             st.session_state["focus_lat"] = e["axisX"]
