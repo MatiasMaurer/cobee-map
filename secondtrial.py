@@ -375,32 +375,34 @@ if st.session_state.page == "Form":
             geo_lat = None
             geo_lon = None
 
-        components.html("""
-        <button onclick="
-            navigator.geolocation.getCurrentPosition(function(pos) {
-                const lat = pos.coords.latitude;
-                const lon = pos.coords.longitude;
-                const url = new URL(window.parent.location.href);
-                url.searchParams.set('flat', lat);
-                url.searchParams.set('flon', lon);
-                url.searchParams.set('page', 'Form');
-                window.parent.location.href = url.toString();
-            }, function(err) {
-                alert('Could not get location: ' + err.message);
-            });
-        " style="
-            background-color: #7c3aed;
-            color: white;
-            border: none;
-            border-radius: 8px;
-            padding: 10px 20px;
-            font-size: 0.9rem;
-            font-weight: 600;
-            cursor: pointer;
-            width: 100%;
-            margin-bottom: 8px;
-        ">Use my current location</button>
-        """, height=55)
+        st.markdown("""
+                    <button id="map-geo-btn" style="
+                        background-color: #7c3aed;
+                        color: white;
+                        border: none;
+                        border-radius: 8px;
+                        padding: 10px 20px;
+                        font-size: 0.9rem;
+                        font-weight: 600;
+                        cursor: pointer;
+                        width: 100%;
+                    ">Show my location</button>
+                    <script>
+                        document.getElementById('map-geo-btn').addEventListener('click', function() {
+                            navigator.geolocation.getCurrentPosition(function(pos) {
+                                const lat = pos.coords.latitude;
+                                const lon = pos.coords.longitude;
+                                const url = new URL(window.location.href);
+                                url.searchParams.set('maplat', lat);
+                                url.searchParams.set('maplon', lon);
+                                url.searchParams.set('page', 'Map');
+                                window.location.href = url.toString();
+                            }, function(err) {
+                                alert('Could not get location: ' + err.message);
+                            });
+                        });
+                    </script>
+                    """, unsafe_allow_html=True)
 
         with st.form("add_form"):
             col1, col2 = st.columns(2)
@@ -564,7 +566,7 @@ elif st.session_state.page == "List":
 
 # ---------- MAP PAGE ----------
 elif st.session_state.page == "Map":
-    map_tab, nearby_tab = st.tabs(["🗺️ Map", "📍 Nearby"])
+    map_tab, nearby_tab = st.tabs(["Map", "Nearby"])
 
     with map_tab:
         data = load_data()
