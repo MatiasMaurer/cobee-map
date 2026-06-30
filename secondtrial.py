@@ -636,11 +636,27 @@ elif st.session_state.page == "Map":
         confirmed_only = [e for e in data if e["status"] == "confirmed"]
 
         st.markdown("**Find establishments near you**")
-        nearby_location = streamlit_geolocation()
 
-        if nearby_location and nearby_location.get("latitude") is not None:
-            ulat = nearby_location["latitude"]
-            ulon = nearby_location["longitude"]
+        if "nearby_lat" not in st.session_state:
+            st.session_state["nearby_lat"] = None
+            st.session_state["nearby_lon"] = None
+
+        button_label = "🔄 Refresh Location" if st.session_state["nearby_lat"] else "📍 Find Nearby Establishments"
+        if st.button(button_label, key="nearby_locate_btn", use_container_width=True):
+            st.session_state["requesting_location"] = True
+            st.rerun()
+
+        if st.session_state.get("requesting_location"):
+            nearby_location = streamlit_geolocation(key="nearby_geo")
+            if nearby_location and nearby_location.get("latitude") is not None:
+                st.session_state["nearby_lat"] = nearby_location["latitude"]
+                st.session_state["nearby_lon"] = nearby_location["longitude"]
+                st.session_state["requesting_location"] = False
+                st.rerun()
+
+        if st.session_state["nearby_lat"] is not None:
+            ulat = st.session_state["nearby_lat"]
+            ulon = st.session_state["nearby_lon"]
 
             if confirmed_only:
                 for e in confirmed_only:
@@ -695,10 +711,7 @@ elif st.session_state.page == "Map":
                             ">🧭 Navigate</div>
                         </a>
                         """, unsafe_allow_html=True)
+                else:
+                    st.info("No confirmed establishments yet.")
             else:
-                st.info("No confirmed establishments yet.")
-        else:
-            st.warning("📍 Location access is required to show nearby establishments.")
-            st.caption("Tap the location icon above to allow access, or try again below.")
-            if st.button("Try again", use_container_width=True):
-                st.rerun()
+                st.warning("📍 Tap the button above to allow location access and find establishments near you.")
