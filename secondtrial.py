@@ -672,11 +672,20 @@ elif st.session_state.page == "Map":
             ulat = st.session_state["nearby_lat"]
             ulon = st.session_state["nearby_lon"]
 
-            if confirmed_only:
-                for e in confirmed_only:
+            nearby_type_filter = st.multiselect(
+                "Filter by type",
+                TYPES,
+                default=TYPES,
+                key="nearby_type_filter"
+            )
+
+            filtered_confirmed = [e for e in confirmed_only if e["Type"] in nearby_type_filter]
+
+            if filtered_confirmed:
+                for e in filtered_confirmed:
                     e["_distance"] = haversine_distance(ulat, ulon, e["axisX"], e["axisY"])
 
-                nearest = sorted(confirmed_only, key=lambda x: x["_distance"])[:10]
+                nearest = sorted(filtered_confirmed, key=lambda x: x["_distance"])[:10]
 
                 for idx, e in enumerate(nearest):
                     badge_class = BADGE_CLASS.get(e["Type"], "badge-other")
@@ -721,6 +730,6 @@ elif st.session_state.page == "Map":
                     </a>
                     """, unsafe_allow_html=True)
             else:
-                st.info("No confirmed establishments yet.")
+                st.info("No confirmed establishments match your filter.")
         else:
             st.info("Tap the button above to allow location access and find establishments near you.")
