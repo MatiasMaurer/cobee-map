@@ -517,17 +517,21 @@ elif st.session_state.page == "List":
     with filter_col2:
         fav_filter = st.selectbox("Favorites", ["All", "Favorites only"], key="list_fav_filter")
 
+    full_data = load_data()
+
+    display_data = full_data.copy()
+
     if search:
-        data = [e for e in data if
-                search.lower() in e["Name"].lower() or
-                search.lower() in e["Street"].lower() or
-                search.lower() in e["Location"].lower()]
+        display_data = [e for e in display_data if
+                        search.lower() in e["Name"].lower() or
+                        search.lower() in e["Street"].lower() or
+                        search.lower() in e["Location"].lower()]
 
     if fav_filter == "Favorites only":
-        data = [e for e in data if e.get("favorite", False)]
+        display_data = [e for e in display_data if e.get("favorite", False)]
 
-    if data:
-        for i, e in enumerate(data):
+    if display_data:
+        for i, e in enumerate(display_data):
             if e["status"] == "confirmed":
                 icon = "✅"
             elif e["status"] == "disputed":
@@ -557,6 +561,10 @@ elif st.session_state.page == "List":
                 </div>
             </div>
             """, unsafe_allow_html=True)
+            # Find the real index in full_data for safe saving
+            real_i = next((j for j, d in enumerate(full_data) if d["Name"] == e["Name"] and d["Street"] == e["Street"]),
+                          None)
+
             action1, action2, action3, action4 = st.columns(4)
             with action1:
                 if st.button("Edit", key=f"Edit_{i}", use_container_width=True):
@@ -564,27 +572,27 @@ elif st.session_state.page == "List":
             with action2:
                 if e["status"] in ["rejected", "disputed"]:
                     if st.button("Restore", key=f"Resolve_yes_{i}", use_container_width=True):
-                        data[i]["status"] = "confirmed"
-                        data[i]["reports"] = 0
-                        data[i]["last_updated"] = datetime.now().strftime("%d/%m/%Y %H:%M")
-                        save_data(data)
+                        full_data[real_i]["status"] = "confirmed"
+                        full_data[real_i]["reports"] = 0
+                        full_data[real_i]["last_updated"] = datetime.now().strftime("%d/%m/%Y %H:%M")
+                        save_data(full_data)
                         st.rerun()
                 else:
                     if st.button("Report", key=f"Resolve_no_{i}", use_container_width=True):
                         reports = e.get("reports", 0) + 1
-                        data[i]["reports"] = reports
+                        full_data[real_i]["reports"] = reports
                         if reports >= 2:
-                            data[i]["status"] = "rejected"
+                            full_data[real_i]["status"] = "rejected"
                         else:
-                            data[i]["status"] = "disputed"
-                        data[i]["last_updated"] = datetime.now().strftime("%d/%m/%Y %H:%M")
-                        save_data(data)
+                            full_data[real_i]["status"] = "disputed"
+                        full_data[real_i]["last_updated"] = datetime.now().strftime("%d/%m/%Y %H:%M")
+                        save_data(full_data)
                         st.rerun()
             with action3:
                 heart = "❤️" if e.get("favorite", False) else "🤍"
                 if st.button(heart, key=f"Fav_{i}", use_container_width=True):
-                    data[i]["favorite"] = not e.get("favorite", False)
-                    save_data(data)
+                    full_data[real_i]["favorite"] = not e.get("favorite", False)
+                    save_data(full_data)
                     st.rerun()
             with action4:
                 if st.button("Delete", key=f"Delete_{i}", use_container_width=True):
@@ -595,8 +603,8 @@ elif st.session_state.page == "List":
                 confirm1, confirm2 = st.columns(2)
                 with confirm1:
                     if st.button("Yes, delete", key=f"confirm_yes_{i}", use_container_width=True):
-                        data.pop(i)
-                        save_data(data)
+                        full_data.pop(real_i)
+                        save_data(full_data)
                         st.session_state[f"confirm_delete_{i}"] = False
                         st.rerun()
                 with confirm2:
@@ -619,7 +627,7 @@ elif st.session_state.page == "List":
                     save_edit = st.form_submit_button("Save changes", use_container_width=True)
 
                 if save_edit:
-                    data[i].update({
+                    full_data[real_i].update({
                         "Name": new_nombre,
                         "Type": new_tipo,
                         "Street": new_calle,
@@ -628,8 +636,8 @@ elif st.session_state.page == "List":
                         "axisX": new_ejeX,
                         "axisY": new_ejeY,
                     })
-                    data[i]["last_updated"] = datetime.now().strftime("%d/%m/%Y %H:%M")
-                    save_data(data)
+                    full_data[real_i]["last_updated"] = datetime.now().strftime("%d/%m/%Y %H:%M")
+                    save_data(full_data)
                     st.session_state["Editing"] = None
                     st.success("Changes saved!")
                     st.rerun()
