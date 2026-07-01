@@ -626,7 +626,7 @@ elif st.session_state.page == "Map":
 
                 fig.update_traces(marker=dict(size=12, opacity=1), selector=dict(type="scattermap"))
                 fig.update_layout(
-                    map_style="carto-darkmatter",
+                    map_style="carto-positron",
                     margin={"r": 0, "t": 0, "l": 0, "b": 0},
                     legend=dict(
                         bgcolor="rgba(20,20,20,0.85)",
