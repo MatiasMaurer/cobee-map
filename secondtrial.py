@@ -463,6 +463,7 @@ elif st.session_state.page == "Form":
                 else:
                     axisX = st.number_input("Latitude", format="%.8f")
                     axisY = st.number_input("Longitude", format="%.8f")
+            is_favorite = st.checkbox("Add to Favorites")
             submitted = st.form_submit_button("Add establishment", use_container_width=True)
 
         if submitted:
@@ -478,6 +479,7 @@ elif st.session_state.page == "Form":
                     "axisY": axisY,
                     "status": "confirmed",
                     "reports": 0,
+                    "favorite": is_favorite,
                     "last_updated": datetime.now().strftime("%d/%m/%Y %H:%M")
                 })
                 save_data(data)
@@ -509,12 +511,20 @@ elif st.session_state.page == "List":
     st.subheader("All establishments")
     data = load_data()
 
-    search = st.text_input("Search", placeholder="Search by name, street or region...")
+    filter_col1, filter_col2 = st.columns(2)
+    with filter_col1:
+        search = st.text_input("Search", placeholder="Search by name, street or region...")
+    with filter_col2:
+        fav_filter = st.selectbox("Favorites", ["All", "Favorites only"], key="list_fav_filter")
+
     if search:
         data = [e for e in data if
                 search.lower() in e["Name"].lower() or
                 search.lower() in e["Street"].lower() or
                 search.lower() in e["Location"].lower()]
+
+    if fav_filter == "Favorites only":
+        data = [e for e in data if e.get("favorite", False)]
 
     if data:
         for i, e in enumerate(data):
@@ -547,7 +557,7 @@ elif st.session_state.page == "List":
                 </div>
             </div>
             """, unsafe_allow_html=True)
-            action1, action2, action3 = st.columns(3)
+            action1, action2, action3, action4 = st.columns(4)
             with action1:
                 if st.button("Edit", key=f"Edit_{i}", use_container_width=True):
                     st.session_state["Editing"] = i
@@ -571,6 +581,12 @@ elif st.session_state.page == "List":
                         save_data(data)
                         st.rerun()
             with action3:
+                heart = "❤️" if e.get("favorite", False) else "🤍"
+                if st.button(heart, key=f"Fav_{i}", use_container_width=True):
+                    data[i]["favorite"] = not e.get("favorite", False)
+                    save_data(data)
+                    st.rerun()
+            with action4:
                 if st.button("Delete", key=f"Delete_{i}", use_container_width=True):
                     st.session_state[f"confirm_delete_{i}"] = True
 
@@ -627,14 +643,19 @@ elif st.session_state.page == "Map":
     with map_tab:
         data = load_data()
         if data:
-            col1, col2 = st.columns(2)
+            col1, col2, col3 = st.columns(3)
             with col1:
                 type_filter = st.multiselect("Filter by type", TYPES, default=TYPES)
             with col2:
                 status_filter = st.multiselect("Filter by status", ["confirmed", "disputed", "rejected"],
                                                default=["confirmed", "disputed", "rejected"])
+            with col3:
+                map_fav_filter = st.selectbox("Favorites", ["All", "Favorites only"], key="map_fav_filter")
 
             filtered_data = [e for e in data if e["Type"] in type_filter and e["status"] in status_filter]
+            if map_fav_filter == "Favorites only":
+                filtered_data = [e for e in filtered_data if e.get("favorite", False)]
+
             df = pd.DataFrame(filtered_data) if filtered_data else None
 
             # Geolocation for map
@@ -744,14 +765,20 @@ elif st.session_state.page == "Map":
             ulat = st.session_state["nearby_lat"]
             ulon = st.session_state["nearby_lon"]
 
-            nearby_type_filter = st.multiselect(
-                "Filter by type",
-                TYPES,
-                default=TYPES,
-                key="nearby_type_filter"
-            )
+            nearby_col1, nearby_col2 = st.columns(2)
+            with nearby_col1:
+                nearby_type_filter = st.multiselect(
+                    "Filter by type",
+                    TYPES,
+                    default=TYPES,
+                    key="nearby_type_filter"
+                )
+            with nearby_col2:
+                nearby_fav_filter = st.selectbox("Favorites", ["All", "Favorites only"], key="nearby_fav_filter")
 
             filtered_confirmed = [e for e in confirmed_only if e["Type"] in nearby_type_filter]
+            if nearby_fav_filter == "Favorites only":
+                filtered_confirmed = [e for e in filtered_confirmed if e.get("favorite", False)]
 
             if filtered_confirmed:
                 for e in filtered_confirmed:
