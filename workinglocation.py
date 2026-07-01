@@ -22,6 +22,22 @@ def save_data(data):
         json.dump(data, f, indent=4)
 
 
+def haversine_distance(lat1, lon1, lat2, lon2):
+    from math import radians, sin, cos, sqrt, atan2
+    R = 6371000  # Earth radius in meters
+    phi1, phi2 = radians(lat1), radians(lat2)
+    dphi = radians(lat2 - lat1)
+    dlambda = radians(lon2 - lon1)
+    a = sin(dphi / 2) ** 2 + cos(phi1) * cos(phi2) * sin(dlambda / 2) ** 2
+    return R * 2 * atan2(sqrt(a), sqrt(1 - a))
+
+
+def format_distance(meters):
+    if meters < 1000:
+        return f"{int(meters)} m"
+    return f"{meters / 1000:.1f} km"
+
+
 # ---------- CONFIG ----------
 st.set_page_config(page_title="Cobee Map", layout="wide", initial_sidebar_state="expanded")
 
@@ -208,6 +224,10 @@ st.markdown("""
     .badge-tabacs      { background: rgba(168,85,247,0.15);  color: #a855f7; }
     .badge-other       { background: rgba(107,114,128,0.15); color: #6b7280; }
 
+    /* Nearby tab action buttons */
+    .main .stButton button {
+        min-height: 42px !important;
+    }
 
     /* Mobile nav bar */
     #mobile-nav {
@@ -291,7 +311,7 @@ st.markdown("""
 
 # ---------- NAVIGATION ----------
 if "page" not in st.session_state:
-    st.session_state.page = "Form"
+    st.session_state.page = "Home"
 
 params = st.query_params
 if "page" in params:
@@ -308,6 +328,10 @@ with st.sidebar:
     st.markdown("<p style='color:#7c3aed; font-size:0.8rem; margin-bottom: 1.5rem;'>Establishment map</p>",
                 unsafe_allow_html=True)
     st.markdown("---")
+    if st.button("Home", key="sb_home", use_container_width=True):
+        st.session_state.page = "Home"
+        st.query_params["page"] = "Home"
+        st.rerun()
     if st.button("Form", key="sb_form", use_container_width=True):
         st.session_state.page = "Form"
         st.query_params["page"] = "Form"
@@ -324,6 +348,9 @@ with st.sidebar:
 # Mobile bottom nav
 st.markdown(f"""
 <div id="mobile-nav">
+    <a href="?page=Home" class="{'active' if page == 'Home' else ''}">
+        <span class="nav-icon">Home</span>
+    </a>
     <a href="?page=Form" class="{'active' if page == 'Form' else ''}">
         <span class="nav-icon">Form</span>
     </a>
@@ -336,27 +363,90 @@ st.markdown(f"""
 </div>
 """, unsafe_allow_html=True)
 
+# ---------- HOME PAGE ----------
+if st.session_state.page == "Home":
+    data = load_data()
+    confirmed_count = len([e for e in data if e["status"] == "confirmed"])
+    disputed_count = len([e for e in data if e["status"] == "disputed"])
+
+    st.markdown("""
+    <div style="max-width: 600px; margin: 2rem auto 0 auto;">
+        <h1 style="color:#ffffff; font-size:2.2rem; font-weight:700; margin-bottom:0.3rem;">Cobee Map</h1>
+        <p style="color:#888888; font-size:1rem; margin-bottom:2rem;">
+            A crowdsourced map of establishments that accept the Cobee card.
+            Add places you know, report ones that no longer work, and help
+            your colleagues find where to spend their Cobee balance.
+        </p>
+    </div>
+    """, unsafe_allow_html=True)
+
+    st.markdown(f"""
+    <div style="display:flex; gap:12px; margin-bottom:2rem; max-width:600px; margin-left:auto; margin-right:auto;">
+        <div style="flex:1; background:#1a1a1a; border:1px solid #2a2a2a; border-radius:12px; padding:16px; text-align:center;">
+            <div style="font-size:1.8rem; font-weight:700; color:#10b981;">{confirmed_count}</div>
+            <div style="color:#666666; font-size:0.8rem; margin-top:4px;">Confirmed</div>
+        </div>
+        <div style="flex:1; background:#1a1a1a; border:1px solid #2a2a2a; border-radius:12px; padding:16px; text-align:center;">
+            <div style="font-size:1.8rem; font-weight:700; color:#f59e0b;">{disputed_count}</div>
+            <div style="color:#666666; font-size:0.8rem; margin-top:4px;">Disputed</div>
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
+
+    st.markdown("""
+    <div style="max-width:600px; margin:0 auto 1.5rem auto;">
+        <p style="color:#aaaaaa; font-size:0.85rem; margin-bottom:1rem;">Where do you want to go?</p>
+    </div>
+    """, unsafe_allow_html=True)
+
+    h1, h2, h3 = st.columns(3)
+    with h1:
+        if st.button("Add a place", key="home_form", use_container_width=True):
+            st.session_state.page = "Form"
+            st.query_params["page"] = "Form"
+            st.rerun()
+    with h2:
+        if st.button("Browse the list", key="home_list", use_container_width=True):
+            st.session_state.page = "List"
+            st.query_params["page"] = "List"
+            st.rerun()
+    with h3:
+        if st.button("Open the map", key="home_map", use_container_width=True):
+            st.session_state.page = "Map"
+            st.query_params["page"] = "Map"
+            st.rerun()
+
 # ---------- FORM PAGE ----------
-if st.session_state.page == "Form":
+elif st.session_state.page == "Form":
     st.subheader("Establishments")
     form_tab1, form_tab2 = st.tabs(["Add establishment", "Report establishment"])
 
     with form_tab1:
         st.markdown(" ")
 
-        # Geolocation outside form so it can render properly
         st.markdown("**Location**")
-        use_current = st.checkbox("Use my current location")
-        geo_lat = None
-        geo_lon = None
-        if use_current:
-            location = streamlit_geolocation()
-            if location and location.get("latitude") is not None:
-                geo_lat = location["latitude"]
-                geo_lon = location["longitude"]
-                st.success(f"Current location detected: {geo_lat:.6f}, {geo_lon:.6f}")
-            else:
-                st.warning("Could not get location. Please enter coordinates manually below.")
+
+        if "form_geo_active" not in st.session_state:
+            st.session_state["form_geo_active"] = False
+
+        geo_lat = st.session_state.get("form_geo_lat")
+        geo_lon = st.session_state.get("form_geo_lon")
+
+        if geo_lat is not None:
+            st.success(f"Current location detected: {geo_lat:.6f}, {geo_lon:.6f}")
+
+        if st.button("Use my current location", key="form_geo_trigger", use_container_width=True):
+            st.session_state["form_geo_active"] = True
+
+        form_geo_slot = st.empty()
+        if st.session_state["form_geo_active"]:
+            with form_geo_slot.container():
+                location = streamlit_geolocation()
+                if location and location.get("latitude") is not None:
+                    st.session_state["form_geo_lat"] = location["latitude"]
+                    st.session_state["form_geo_lon"] = location["longitude"]
+                    st.session_state["form_geo_active"] = False
+                    st.rerun()
 
         with st.form("add_form"):
             col1, col2 = st.columns(2)
@@ -391,7 +481,7 @@ if st.session_state.page == "Form":
                     "last_updated": datetime.now().strftime("%d/%m/%Y %H:%M")
                 })
                 save_data(data)
-                st.success(f"✅ {Name} added successfully!")
+                st.success(f"{Name} added successfully!")
             else:
                 st.error("Please fill in name, street and city.")
 
@@ -410,7 +500,7 @@ if st.session_state.page == "Form":
                         e["status"] = "disputed"
                         e["last_updated"] = datetime.now().strftime("%d/%m/%Y %H:%M")
                 save_data(data)
-                st.warning(f"⚠️ {selected} has been reported and marked as disputed.")
+                st.warning(f"{selected} has been reported and marked as disputed.")
         else:
             st.info("No confirmed establishments to report yet.")
 
@@ -419,7 +509,7 @@ elif st.session_state.page == "List":
     st.subheader("All establishments")
     data = load_data()
 
-    search = st.text_input("🔍 Search", placeholder="Search by name, street or region...")
+    search = st.text_input("Search", placeholder="Search by name, street or region...")
     if search:
         data = [e for e in data if
                 search.lower() in e["Name"].lower() or
@@ -459,18 +549,18 @@ elif st.session_state.page == "List":
             """, unsafe_allow_html=True)
             action1, action2, action3 = st.columns(3)
             with action1:
-                if st.button("✏️ Edit", key=f"Edit_{i}", use_container_width=True):
+                if st.button("Edit", key=f"Edit_{i}", use_container_width=True):
                     st.session_state["Editing"] = i
             with action2:
                 if e["status"] in ["rejected", "disputed"]:
-                    if st.button("✅ Restore", key=f"Resolve_yes_{i}", use_container_width=True):
+                    if st.button("Restore", key=f"Resolve_yes_{i}", use_container_width=True):
                         data[i]["status"] = "confirmed"
                         data[i]["reports"] = 0
                         data[i]["last_updated"] = datetime.now().strftime("%d/%m/%Y %H:%M")
                         save_data(data)
                         st.rerun()
                 else:
-                    if st.button("⚠️ Report", key=f"Resolve_no_{i}", use_container_width=True):
+                    if st.button("Report", key=f"Resolve_no_{i}", use_container_width=True):
                         reports = e.get("reports", 0) + 1
                         data[i]["reports"] = reports
                         if reports >= 2:
@@ -481,10 +571,22 @@ elif st.session_state.page == "List":
                         save_data(data)
                         st.rerun()
             with action3:
-                if st.button("🗑 Delete", key=f"Delete_{i}", use_container_width=True):
-                    data.pop(i)
-                    save_data(data)
-                    st.rerun()
+                if st.button("Delete", key=f"Delete_{i}", use_container_width=True):
+                    st.session_state[f"confirm_delete_{i}"] = True
+
+            if st.session_state.get(f"confirm_delete_{i}"):
+                st.warning(f"Are you sure you want to delete **{e['Name']}**?")
+                confirm1, confirm2 = st.columns(2)
+                with confirm1:
+                    if st.button("Yes, delete", key=f"confirm_yes_{i}", use_container_width=True):
+                        data.pop(i)
+                        save_data(data)
+                        st.session_state[f"confirm_delete_{i}"] = False
+                        st.rerun()
+                with confirm2:
+                    if st.button("Cancel", key=f"confirm_no_{i}", use_container_width=True):
+                        st.session_state[f"confirm_delete_{i}"] = False
+                        st.rerun()
 
             if st.session_state.get("Editing") == i:
                 with st.form(f"Edit_form_{i}"):
@@ -513,88 +615,193 @@ elif st.session_state.page == "List":
                     data[i]["last_updated"] = datetime.now().strftime("%d/%m/%Y %H:%M")
                     save_data(data)
                     st.session_state["Editing"] = None
-                    st.success("✅ Changes saved!")
+                    st.success("Changes saved!")
                     st.rerun()
     else:
         st.info("No establishments added yet.")
 
 # ---------- MAP PAGE ----------
 elif st.session_state.page == "Map":
-    data = load_data()
-    if data:
-        col1, col2 = st.columns(2)
-        with col1:
-            type_filter = st.multiselect("Filter by type", TYPES, default=TYPES)
-        with col2:
-            status_filter = st.multiselect("Filter by status", ["confirmed", "disputed", "rejected"],
-                                           default=["confirmed", "disputed", "rejected"])
+    map_tab, nearby_tab = st.tabs(["Map", "Nearby"])
 
-        filtered_data = [e for e in data if e["Type"] in type_filter and e["status"] in status_filter]
-        df = pd.DataFrame(filtered_data) if filtered_data else None
+    with map_tab:
+        data = load_data()
+        if data:
+            col1, col2 = st.columns(2)
+            with col1:
+                type_filter = st.multiselect("Filter by type", TYPES, default=TYPES)
+            with col2:
+                status_filter = st.multiselect("Filter by status", ["confirmed", "disputed", "rejected"],
+                                               default=["confirmed", "disputed", "rejected"])
 
-        # Geolocation for map
-        st.markdown("**Show my location on the map**")
-        map_location = streamlit_geolocation()
-        if map_location and map_location.get("latitude") is not None:
-            user_lat = map_location["latitude"]
-            user_lon = map_location["longitude"]
+            filtered_data = [e for e in data if e["Type"] in type_filter and e["status"] in status_filter]
+            df = pd.DataFrame(filtered_data) if filtered_data else None
+
+            # Geolocation for map
+            st.markdown("**Show my location on the map**")
+
+            if "map_geo_active" not in st.session_state:
+                st.session_state["map_geo_active"] = False
+
+            user_lat = st.session_state.get("map_geo_lat")
+            user_lon = st.session_state.get("map_geo_lon")
+
+            if st.button("Show my location", key="map_geo_trigger", use_container_width=True):
+                st.session_state["map_geo_active"] = True
+
+            map_geo_slot = st.empty()
+            if st.session_state["map_geo_active"]:
+                with map_geo_slot.container():
+                    map_location = streamlit_geolocation()
+                    if map_location and map_location.get("latitude") is not None:
+                        st.session_state["map_geo_lat"] = map_location["latitude"]
+                        st.session_state["map_geo_lon"] = map_location["longitude"]
+                        st.session_state["map_geo_active"] = False
+                        st.rerun()
+
+            if df is not None:
+                color_map = {
+                    "Supermarket": "#10b981",
+                    "Restaurant": "#f59e0b",
+                    "Transit": "#ef4444",
+                    "Coffee Shop": "#3b82f6",
+                    "Tabacs": "#a855f7",
+                    "Other": "#6b7280"
+                }
+
+                fig = px.scatter_map(
+                    df,
+                    lat="axisX",
+                    lon="axisY",
+                    hover_name="Name",
+                    hover_data={"Type": True, "Street": True, "Location": True, "axisX": False, "axisY": False,
+                                "status": False},
+                    color="Type",
+                    color_discrete_map=color_map,
+                    zoom=12,
+                    height=780,
+                )
+
+                if user_lat and user_lon:
+                    fig.add_scattermap(
+                        lat=[user_lat],
+                        lon=[user_lon],
+                        mode="markers",
+                        marker=dict(size=18, color="#ffffff"),
+                        name="You are here",
+                        hovertemplate="<b>You are here</b><extra></extra>"
+                    )
+                    fig.update_layout(map=dict(
+                        center=dict(lat=user_lat, lon=user_lon),
+                        zoom=14
+                    ))
+
+                fig.update_traces(marker=dict(size=12, opacity=1), selector=dict(type="scattermap"))
+                fig.update_layout(
+                    map_style="carto-darkmatter",
+                    margin={"r": 0, "t": 0, "l": 0, "b": 0},
+                    legend=dict(
+                        bgcolor="rgba(20,20,20,0.85)",
+                        bordercolor="#2a2a2a",
+                        borderwidth=1,
+                        font=dict(color="#ffffff", size=12),
+                    )
+                )
+                st.plotly_chart(fig, use_container_width=True)
+            else:
+                st.info("No establishments match your filters.")
         else:
-            user_lat = None
-            user_lon = None
+            st.info("No establishments to show on the map yet.")
 
-        if df is not None:
-            color_map = {
-                "Supermarket": "#10b981",
-                "Restaurant": "#f59e0b",
-                "Transit": "#ef4444",
-                "Coffee Shop": "#3b82f6",
-                "Tabacs": "#a855f7",
-                "Other": "#6b7280"
-            }
+    with nearby_tab:
+        data = load_data()
+        confirmed_only = [e for e in data if e["status"] == "confirmed"]
 
-            fig = px.scatter_map(
-                df,
-                lat="axisX",
-                lon="axisY",
-                hover_name="Name",
-                hover_data={"Type": True, "Street": True, "Location": True, "axisX": False, "axisY": False,
-                            "status": False},
-                color="Type",
-                color_discrete_map=color_map,
-                zoom=12,
-                height=780,
+        st.markdown("**Find establishments near you**")
+
+        if "nearby_lat" not in st.session_state:
+            st.session_state["nearby_lat"] = None
+            st.session_state["nearby_lon"] = None
+        if "nearby_geo_active" not in st.session_state:
+            st.session_state["nearby_geo_active"] = False
+
+        button_label = "Refresh Location" if st.session_state["nearby_lat"] else "Find Nearby Establishments"
+
+        if st.button(button_label, key="nearby_geo_trigger", use_container_width=True):
+            st.session_state["nearby_geo_active"] = True
+
+        nearby_geo_slot = st.empty()
+        if st.session_state["nearby_geo_active"]:
+            with nearby_geo_slot.container():
+                nearby_location = streamlit_geolocation()
+                if nearby_location and nearby_location.get("latitude") is not None:
+                    st.session_state["nearby_lat"] = nearby_location["latitude"]
+                    st.session_state["nearby_lon"] = nearby_location["longitude"]
+                    st.session_state["nearby_geo_active"] = False
+                    st.rerun()
+
+        if st.session_state["nearby_lat"] is not None:
+            ulat = st.session_state["nearby_lat"]
+            ulon = st.session_state["nearby_lon"]
+
+            nearby_type_filter = st.multiselect(
+                "Filter by type",
+                TYPES,
+                default=TYPES,
+                key="nearby_type_filter"
             )
 
-            if user_lat and user_lon:
-                fig.add_scattermap(
-                    lat=[user_lat],
-                    lon=[user_lon],
-                    mode="markers",
-                    marker=dict(size=18, color="#ffffff"),
-                    name="You are here",
-                    hovertemplate="<b>You are here</b><extra></extra>"
-                )
-                fig.update_layout(map=dict(
-                    center=dict(lat=user_lat, lon=user_lon),
-                    zoom=14
-                ))
+            filtered_confirmed = [e for e in confirmed_only if e["Type"] in nearby_type_filter]
 
-            fig.update_traces(marker=dict(size=12, opacity=1), selector=dict(type="scattermap"))
-            fig.update_layout(
-                map_style="carto-darkmatter",
-                margin={"r": 0, "t": 0, "l": 0, "b": 0},
-                legend=dict(
-                    bgcolor="rgba(20,20,20,0.85)",
-                    bordercolor="#2a2a2a",
-                    borderwidth=1,
-                    font=dict(color="#ffffff", size=12),
-                )
-            )
-            st.plotly_chart(fig, use_container_width=True)
+            if filtered_confirmed:
+                for e in filtered_confirmed:
+                    e["_distance"] = haversine_distance(ulat, ulon, e["axisX"], e["axisY"])
+
+                nearest = sorted(filtered_confirmed, key=lambda x: x["_distance"])[:10]
+
+                for idx, e in enumerate(nearest):
+                    badge_class = BADGE_CLASS.get(e["Type"], "badge-other")
+                    dist_text = format_distance(e["_distance"])
+
+                    st.markdown(f"""
+                    <div class="establishment-card">
+                        <div class="card-top">
+                            <div class="card-left">
+                                <div class="establishment-name">
+                                    {e['Name']}
+                                </div>
+                                <div class="establishment-meta">
+                                    {e['Street']} · {e['Location']}
+                                </div>
+                                <div class="establishment-meta">
+                                    {dist_text} away · Updated {e.get("last_updated", "Never")}
+                                </div>
+                            </div>
+                            <span class="badge {badge_class}">
+                                {e['Type']}
+                            </span>
+                        </div>
+                    </div>
+                    """, unsafe_allow_html=True)
+                    nav_url = f"https://www.google.com/maps/dir/?api=1&destination={e['axisX']},{e['axisY']}&travelmode=walking"
+
+                    st.markdown(f"""
+                    <a href="{nav_url}" target="_blank" style="text-decoration:none;">
+                        <div style="
+                            background-color:#7c3aed;
+                            color:#ffffff;
+                            text-align:center;
+                            border-radius:8px;
+                            padding:10px 0;
+                            font-weight:600;
+                            font-size:0.95rem;
+                            margin-bottom:18px;
+                        ">
+                            Navigate
+                        </div>
+                    </a>
+                    """, unsafe_allow_html=True)
+            else:
+                st.info("No confirmed establishments match your filter.")
         else:
-            st.info("No establishments match your filters.")
-    else:
-        st.info("No establishments to show on the map yet.")
-
-
-Add this to requirements: streamlit-geolocation
+            st.info("Tap the button above to allow location access and find establishments near you.")
