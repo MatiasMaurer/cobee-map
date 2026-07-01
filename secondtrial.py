@@ -291,6 +291,10 @@ st.markdown("""
             min-height: 36px !important;
         }
     }
+    
+    #mobile-nav {
+        display: none;
+    }
 
     /* Hide streamlit branding */
     #MainMenu, footer, header { visibility: hidden; }
