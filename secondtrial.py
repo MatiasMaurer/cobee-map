@@ -271,7 +271,7 @@ st.markdown("""
             overflow-x:hidden;
         }
         #mobile-nav {
-            display: block !important;
+            display: flex !important;
             position: fixed;
             bottom: 0;
             left: 0;
@@ -279,21 +279,29 @@ st.markdown("""
             z-index: 99999;
             background-color: #111111;
             border-top: 1px solid #2a2a2a;
-            padding: 8px 8px 20px 8px;
+            justify-content: space-around;
+            align-items: center;
+            padding: 8px 0 24px 0;
+            height: 65px;
         }
-        #mobile-nav .stButton button {
-            background-color: transparent !important;
-            color: #888888 !important;
-            border: none !important;
-            font-size: 0.75rem !important;
-            font-weight: 500 !important;
-            padding: 6px 4px !important;
-            min-height: 36px !important;
+        #mobile-nav a {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 3px;
+            text-decoration: none;
+            color: #888888;
+            font-size: 0.65rem;
+            font-weight: 500;
+            flex: 1;
         }
-    }
-    
-    #mobile-nav {
-        display: none;
+        #mobile-nav a.active {
+            color: #7c3aed;
+        }
+        #mobile-nav a span.nav-icon {
+            font-size: 1.3rem;
+        }
     }
 
     /* Hide streamlit branding */
@@ -338,29 +346,22 @@ with st.sidebar:
         st.rerun()
 
 # Mobile bottom nav
-st.markdown("<div id='mobile-nav'>", unsafe_allow_html=True)
-col_home, col_form, col_list, col_map = st.columns(4)
-with col_home:
-    if st.button("Home", key="mob_home", use_container_width=True):
-        st.session_state.page = "Home"
-        st.query_params["page"] = "Home"
-        st.rerun()
-with col_form:
-    if st.button("Form", key="mob_form", use_container_width=True):
-        st.session_state.page = "Form"
-        st.query_params["page"] = "Form"
-        st.rerun()
-with col_list:
-    if st.button("List", key="mob_list", use_container_width=True):
-        st.session_state.page = "List"
-        st.query_params["page"] = "List"
-        st.rerun()
-with col_map:
-    if st.button("Map", key="mob_map", use_container_width=True):
-        st.session_state.page = "Map"
-        st.query_params["page"] = "Map"
-        st.rerun()
-st.markdown("</div>", unsafe_allow_html=True)
+st.markdown(f"""
+<div id="mobile-nav">
+    <a href="?page=Home" class="{'active' if page == 'Home' else ''}">
+        <span class="nav-icon">Home</span>
+    </a>
+    <a href="?page=Form" class="{'active' if page == 'Form' else ''}">
+        <span class="nav-icon">Form</span>
+    </a>
+    <a href="?page=List" class="{'active' if page == 'List' else ''}">
+        <span class="nav-icon">List</span>
+    </a>
+    <a href="?page=Map" class="{'active' if page == 'Map' else ''}">
+        <span class="nav-icon">Map</span>
+    </a>
+</div>
+""", unsafe_allow_html=True)
 
 # ---------- HOME PAGE ----------
 if st.session_state.page == "Home":
