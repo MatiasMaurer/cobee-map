@@ -311,7 +311,7 @@ st.markdown("""
 
 # ---------- NAVIGATION ----------
 if "page" not in st.session_state:
-    st.session_state.page = "Form"
+    st.session_state.page = "Home"
 
 params = st.query_params
 if "page" in params:
@@ -328,6 +328,10 @@ with st.sidebar:
     st.markdown("<p style='color:#7c3aed; font-size:0.8rem; margin-bottom: 1.5rem;'>Establishment map</p>",
                 unsafe_allow_html=True)
     st.markdown("---")
+    if st.button("Home", key="sb_home", use_container_width=True):
+        st.session_state.page = "Home"
+        st.query_params["page"] = "Home"
+        st.rerun()
     if st.button("Form", key="sb_form", use_container_width=True):
         st.session_state.page = "Form"
         st.query_params["page"] = "Form"
@@ -344,6 +348,9 @@ with st.sidebar:
 # Mobile bottom nav
 st.markdown(f"""
 <div id="mobile-nav">
+    <a href="?page=Home" class="{'active' if page == 'Home' else ''}">
+        <span class="nav-icon">Home</span>
+    </a>
     <a href="?page=Form" class="{'active' if page == 'Form' else ''}">
         <span class="nav-icon">Form</span>
     </a>
@@ -356,8 +363,61 @@ st.markdown(f"""
 </div>
 """, unsafe_allow_html=True)
 
+# ---------- HOME PAGE ----------
+if st.session_state.page == "Home":
+    data = load_data()
+    confirmed_count = len([e for e in data if e["status"] == "confirmed"])
+    disputed_count = len([e for e in data if e["status"] == "disputed"])
+
+    st.markdown("""
+    <div style="max-width: 600px; margin: 2rem auto 0 auto;">
+        <h1 style="color:#ffffff; font-size:2.2rem; font-weight:700; margin-bottom:0.3rem;">Cobee Map</h1>
+        <p style="color:#888888; font-size:1rem; margin-bottom:2rem;">
+            A crowdsourced map of establishments that accept the Cobee card.
+            Add places you know, report ones that no longer work, and help
+            your colleagues find where to spend their Cobee balance.
+        </p>
+    </div>
+    """, unsafe_allow_html=True)
+
+    st.markdown(f"""
+    <div style="display:flex; gap:12px; margin-bottom:2rem; max-width:600px; margin-left:auto; margin-right:auto;">
+        <div style="flex:1; background:#1a1a1a; border:1px solid #2a2a2a; border-radius:12px; padding:16px; text-align:center;">
+            <div style="font-size:1.8rem; font-weight:700; color:#10b981;">{confirmed_count}</div>
+            <div style="color:#666666; font-size:0.8rem; margin-top:4px;">Confirmed</div>
+        </div>
+        <div style="flex:1; background:#1a1a1a; border:1px solid #2a2a2a; border-radius:12px; padding:16px; text-align:center;">
+            <div style="font-size:1.8rem; font-weight:700; color:#f59e0b;">{disputed_count}</div>
+            <div style="color:#666666; font-size:0.8rem; margin-top:4px;">Disputed</div>
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
+
+    st.markdown("""
+    <div style="max-width:600px; margin:0 auto 1.5rem auto;">
+        <p style="color:#aaaaaa; font-size:0.85rem; margin-bottom:1rem;">Where do you want to go?</p>
+    </div>
+    """, unsafe_allow_html=True)
+
+    h1, h2, h3 = st.columns(3)
+    with h1:
+        if st.button("Add a place", key="home_form", use_container_width=True):
+            st.session_state.page = "Form"
+            st.query_params["page"] = "Form"
+            st.rerun()
+    with h2:
+        if st.button("Browse the list", key="home_list", use_container_width=True):
+            st.session_state.page = "List"
+            st.query_params["page"] = "List"
+            st.rerun()
+    with h3:
+        if st.button("Open the map", key="home_map", use_container_width=True):
+            st.session_state.page = "Map"
+            st.query_params["page"] = "Map"
+            st.rerun()
+
 # ---------- FORM PAGE ----------
-if st.session_state.page == "Form":
+elif st.session_state.page == "Form":
     st.subheader("Establishments")
     form_tab1, form_tab2 = st.tabs(["Add establishment", "Report establishment"])
 
