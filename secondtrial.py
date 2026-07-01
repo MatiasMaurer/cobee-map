@@ -512,9 +512,21 @@ elif st.session_state.page == "List":
                         st.rerun()
             with action3:
                 if st.button("Delete", key=f"Delete_{i}", use_container_width=True):
-                    data.pop(i)
-                    save_data(data)
-                    st.rerun()
+                    st.session_state[f"confirm_delete_{i}"] = True
+
+            if st.session_state.get(f"confirm_delete_{i}"):
+                st.warning(f"Are you sure you want to delete **{e['Name']}**?")
+                confirm1, confirm2 = st.columns(2)
+                with confirm1:
+                    if st.button("Yes, delete", key=f"confirm_yes_{i}", use_container_width=True):
+                        data.pop(i)
+                        save_data(data)
+                        st.session_state[f"confirm_delete_{i}"] = False
+                        st.rerun()
+                with confirm2:
+                    if st.button("Cancel", key=f"confirm_no_{i}", use_container_width=True):
+                        st.session_state[f"confirm_delete_{i}"] = False
+                        st.rerun()
 
             if st.session_state.get("Editing") == i:
                 with st.form(f"Edit_form_{i}"):
