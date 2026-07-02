@@ -437,6 +437,7 @@ elif st.session_state.page == "Form":
 
         if st.button("Use my current location", key="form_geo_trigger", use_container_width=True):
             st.session_state["form_geo_active"] = True
+        st.caption("Tap the button above, then tap the location button that appears to confirm.")
 
         form_geo_slot = st.empty()
         if st.session_state["form_geo_active"]:
@@ -677,6 +678,7 @@ elif st.session_state.page == "Map":
 
             if st.button("Show my location", key="map_geo_trigger", use_container_width=True):
                 st.session_state["map_geo_active"] = True
+            st.caption("Tap the button above, then tap the location button that appears to confirm.")
 
             map_geo_slot = st.empty()
             if st.session_state["map_geo_active"]:
@@ -758,6 +760,7 @@ elif st.session_state.page == "Map":
 
         if st.button(button_label, key="nearby_geo_trigger", use_container_width=True):
             st.session_state["nearby_geo_active"] = True
+        st.caption("Tap the button above, then tap the location button that appears to confirm.")
 
         nearby_geo_slot = st.empty()
         if st.session_state["nearby_geo_active"]:
